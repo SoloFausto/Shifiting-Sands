@@ -248,7 +248,7 @@ class Enemy:
         self.height = TILE_SIZE * 0.7
         
         # Physics/Movement
-        self.vx = ENEMY_SPEED # Start moving right
+        self.vx = 0.0 # Start moving right
         self.vy = 0.0 
         self.is_grounded = False
 
@@ -256,7 +256,7 @@ class Enemy:
         """Returns the enemy's collision bounding box."""
         return (self.x, self.y, self.width, self.height)
 
-    def update(self, delta_time, level):
+    def update(self, delta_time, level,player,enemies):
         # 1. Apply Gravity
         if self.is_grounded:
             self.vy = 0.0
@@ -272,6 +272,21 @@ class Enemy:
         # Apply Y movement
         self.y += self.vy * delta_time
         self.handle_tile_collision(level, 'Y')
+        
+        if self.x != player.x and self.y != player.y:
+
+            for enemy in enemies:
+                 if enemy != self and not CheckCollisionRecs(self.get_rect(), enemy.get_rect()):
+                    if self.x != player.x:
+                        if self.x < player.x:
+                            self.vx = ENEMY_SPEED
+                        else:
+                            self.vx = -ENEMY_SPEED
+                    else:
+                        self.vx = 0.0
+
+
+            
 
     def handle_tile_collision(self, level, axis):
         """Enemy collision: reverses direction on horizontal wall contact, respects vertical floor contact."""
@@ -427,7 +442,7 @@ def main():
             
             # Update Enemies
             for enemy in enemies:
-                enemy.update(delta_time, game_level)
+                enemy.update(delta_time, game_level,player,enemies)
 
             update_camera(camera, player, WORLD_WIDTH, WORLD_HEIGHT, SCREEN_WIDTH, SCREEN_HEIGHT)
 
