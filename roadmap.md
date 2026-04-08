@@ -27,3 +27,17 @@ Next TODO:
 
 - Level Loading improvements
 - Player and enemy animations
+
+Date: 2026/04/08, 2:30pm
+**Goal**
+Load the level from an external file
+**Implementation**
+Technical Plan/Credit: https://www.w3schools.com/python/python_file_open.asp
+Content Credit: Some AI was used as a consultant and debugger
+
+Commit Message feat(QoL): load levels from files
+
+Next TODO:
+
+- Level Loading improvements
+- Player and enemy animations
