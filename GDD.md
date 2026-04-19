@@ -15,6 +15,7 @@ Shifting Sands is a game where you have to problem-solve and strategically creat
 * The Powder Toy is a free sandbox physics game that I used to play a lot when I was younger, and it really inspired the idea of simulating the falling sand.
 ![powdertoy image](/references/powder_toy.png)
 * The underground desert biome in the video game Terraria is one of the main aesthetic inspirations with regard to how the game would look, but I also want to mix in some more post-apocalyptic elements like ruins, abandoned buildings, etc.
+  
 ![terraria undeground desert image](/references/terraria_underground_desert.png)
 * The videogame Spelunky also served as inspiration to better understan the cave aesthetic, and how spelunking works in a videogame.
 ![spelunky image](/references/spelunky.png)
