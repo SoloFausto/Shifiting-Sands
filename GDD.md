@@ -25,7 +25,9 @@ Shifting Sands is a game where you have to problem-solve and strategically creat
 My main character doesn’t have a name; he is a roundish, short character with a spelunker hat and tan coloured clothes.
 
 The player also has a companion, a small robot that is primarily formed by a crt, a big propeller, and some electronics hanging from the back.
+
 ![companion](/references/companion.png)
+
 The idea is that this companion will stay at the surface and debrief the player on his objective, serve as a kind of tutorial to inform the player of basic controls, and to encourage the player.
 
 The game is to adopt a cartoonish aesthetic with simple lines and bright colors.
@@ -38,6 +40,7 @@ Anything that is caught under a cave-in will be killed as rocks fall on top of i
 Cave-ins can also cause certain optional objectives to be obstructed, forcing the player to carefully plan how they are going to traverse the level.
 
 Enemies are small bug-like robots that pace back and forth, damaging the player on contact with them. The player can take 3 hits from the enemies, but being caught under a cave-in will instantly kill them.
+
 ![enemies](/references/enemy.png)
 
 There is also dynamite spread throughout the level. It explodes in a circle, instantly killing whoever is caught inside it, but it also destroys the sand when it explodes. It only gets activated if it is hit directly with a rock,
