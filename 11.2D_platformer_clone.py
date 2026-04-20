@@ -54,15 +54,15 @@ def parse_level(path):
             x = c * TILE_SIZE
             y = r * TILE_SIZE
 
-            if new_level[r][c] == TILE_COIN:
-                # Coin position is center
-                coins.append((x + TILE_SIZE / 2, y + TILE_SIZE / 2))
-                new_level[r][c] = TILE_AIR 
+            # if new_level[r][c] == TILE_COIN:
+            #     # Coin position is center
+            #     coins.append((x + TILE_SIZE / 2, y + TILE_SIZE / 2))
+            #     new_level[r][c] = TILE_AIR 
             
-            elif new_level[r][c] == TILE_ENEMY:
-                # Enemy position is top-left
-                enemies.append(Enemy(x, y))
-                new_level[r][c] = TILE_AIR 
+            # elif new_level[r][c] == TILE_ENEMY:
+            #     # Enemy position is top-left
+            #     enemies.append(Enemy(x, y))
+            #     new_level[r][c] = TILE_AIR 
                 
     return new_level, coins, enemies
 
