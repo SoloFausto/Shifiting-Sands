@@ -21,6 +21,7 @@ class SandGrain:
     def __init__(self, gx, gy):
         self.gx = gx
         self.gy = gy
+        self.active = False
         self.color = random.choice(_SAND_COLORS)
 
 
@@ -53,8 +54,12 @@ class SandSimulation:
     def update(self, level):
         # It is important to start at the end https://jason.today/falling-sand
         # accessing the set as a sorted list through a lambda
-        for grain in sorted(self.grains, key=lambda g: -1 * g.gy):
+        ordered_grains = sorted(self.grains, key=lambda g: (g.gy, g.gx), reverse=True)
+        for grain in ordered_grains:
             gx, gy = grain.gx, grain.gy
+
+            if not grain.active:
+                continue
 
             if not self._is_blocked(gx, gy + 1, level):
                 self.occupied.discard((gx, gy))
@@ -62,7 +67,6 @@ class SandSimulation:
                 self.occupied.add((grain.gx, grain.gy))
             else:
                 dirs = [-1, 1]
-                # random.shuffle(dirs)
                 for dx in dirs:
                     if not self._is_blocked(gx + dx, gy + 1, level):
                         self.occupied.discard((gx, gy))
@@ -70,7 +74,6 @@ class SandSimulation:
                         grain.gy += 1
                         self.occupied.add((grain.gx, grain.gy))
                         break
-
     def draw(self):
         for grain in self.grains:
             DrawRectangle(

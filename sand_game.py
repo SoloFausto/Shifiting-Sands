@@ -5,6 +5,7 @@ from utils import parse_level
 from enemy import Enemy
 from player import Player
 from sand import SandSimulation
+from stone import Stone
 
 class Game():
     def __init__(self):
@@ -18,8 +19,9 @@ class Game():
         # Game State Variables
         # Player starts at TILE_SIZE * 2, TILE_SIZE * 2
         self.player = Player(TILE_SIZE * 2, TILE_SIZE * 2) 
+        self.stones: list[Stone] = []
         self.score = 0
-        self.game_state = "PLAYING" 
+        self.game_state = "PLAYING"
         
         # --- Camera Initialization ---
         self.camera = Camera2D()
@@ -40,6 +42,19 @@ class Game():
                 enemy.update(delta_time, self.game_level, self.player, self.enemies)
 
             self.sand.update(self.game_level)
+
+            # Throw stone toward world-space mouse on left click
+            if IsMouseButtonPressed(MOUSE_BUTTON_LEFT):
+                mouse_screen = GetMousePosition()
+                mouse_world = GetScreenToWorld2D(mouse_screen, self.camera)
+                cx = self.player.x + self.player.width / 2
+                cy = self.player.y + self.player.height / 2
+                self.stones.append(Stone(cx, cy, mouse_world.x, mouse_world.y))
+
+            for stone in self.stones:
+                stone.update(delta_time, self.game_level, self.sand)
+            self.stones = [s for s in self.stones if s.active]
+
             self.update_camera(WORLD_WIDTH, WORLD_HEIGHT, SCREEN_WIDTH, SCREEN_HEIGHT)
 
             # Check for coin collection
@@ -87,7 +102,11 @@ class Game():
         for enemy in self.enemies:
             enemy.draw()
 
-        # 6. Draw Player
+        # 6. Draw Stones
+        for stone in self.stones:
+            stone.draw()
+
+        # 7. Draw Player
         self.player.draw()
         
         # End the 2D camera mode

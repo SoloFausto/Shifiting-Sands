@@ -70,11 +70,25 @@ Date 2026/04/20, 02-30
 **Goal**
 Have the falling sand collide with the player
 **Implementation**
-Technical Plan/Credit: AABB implementation for tiles currently in the project
-Content Credit: https://jason.today/falling-sand
+Technical Plan/Credit: AABB implementation for tiles currently in the project, some debugging with the help of AI was done for finetuning the ground toggling.
+
+Content Credit:
 
 Commit Message: Improved Falling sand
 
 Next TODO:
 - Rock Throwing
 - Do not simulate sand that hasn't been interacted with, propagate interactions to neighbours
+
+Date 2026/04/20, 04-00
+**Goal**
+Throw rocks to make sand clumps fall
+**Implementation**
+Technical Plan/Credit: Class material for the rock trajectory, AI with the recursive nature of toggling the sand grains active
+Content Credit: 
+
+Commit Message: Feature: Throwable rocks, falling clumps of sand
+
+Next TODO:
+- Sand damage to both the player and enemies when falling
+- Start bringing assets
