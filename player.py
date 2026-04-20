@@ -3,6 +3,9 @@ import math
 from raylib import *
 from pyray import *
 from settings import *
+from sand import SAND_SIZE
+
+STEP_HEIGHT = 20  # max pixel height the player can step up over a sand mound
 class Player:
     def __init__(self, x, y):
         # Store starting position for reset
@@ -23,7 +26,7 @@ class Player:
         """Returns the player's collision bounding box (top-left, width, height)."""
         return (self.x, self.y, self.width, self.height)
 
-    def update(self, delta_time, level):
+    def update(self, delta_time, level, sand=None):
         # 1. Handle Input (Horizontal Movement)
         self.vx = 0.0
         if IsKeyDown(KEY_LEFT) or IsKeyDown(KEY_A):
@@ -52,10 +55,14 @@ class Player:
         # Apply X movement
         self.x += self.vx * delta_time
         self.handle_tile_collision(level, 'X')
-        
+        if sand:
+            self.handle_sand_collision(sand, 'X')
+
         # Apply Y movement
         self.y += self.vy * delta_time
         self.handle_tile_collision(level, 'Y')
+        if sand:
+            self.handle_sand_collision(sand, 'Y')
         
         # --- Safety Clamp to World Bounds ---
         self.x = max(0, min(self.x, WORLD_WIDTH - self.width))
@@ -100,6 +107,72 @@ class Player:
                         player_rect = self.get_rect()
                         px, py, pw, ph = player_rect
                         
+    def handle_sand_collision(self, sand, axis):
+        # Function largely done with the help of AI.
+        px, py, pw, ph = self.x, self.y, self.width, self.height
+        min_gx = int(px / SAND_SIZE)
+        max_gx = int((px + pw - 1) / SAND_SIZE)
+        min_gy = int(py / SAND_SIZE)
+        max_gy = int((py + ph - 1) / SAND_SIZE)
+
+        if axis == 'Y':
+            # Find the topmost grain (smallest gy) that overlaps the player.
+            top_gy = None
+            for gy in range(min_gy, max_gy + 1):
+                for gx in range(min_gx, max_gx + 1):
+                    if (gx, gy) not in sand.occupied:
+                        continue
+                    g_rect = (gx * SAND_SIZE, gy * SAND_SIZE, SAND_SIZE, SAND_SIZE)
+                    if CheckCollisionRecs((self.x, self.y, self.width, self.height), g_rect):
+                        if top_gy is None or gy < top_gy:
+                            top_gy = gy
+                        break
+            if top_gy is not None:
+                if self.vy >= 0:
+                    self.y = top_gy * SAND_SIZE - self.height
+                    self.is_grounded = True
+                else:
+                    self.y = (top_gy + 1) * SAND_SIZE
+                self.vy = 0.0
+            elif self.vy >= 0:
+                feet_y = self.y + self.height
+                probe_gy = int(feet_y / SAND_SIZE)
+                for g in [probe_gy, probe_gy + 1]:
+                    for gx in range(min_gx, max_gx + 1):
+                        if (gx, g) in sand.occupied:
+                            if g * SAND_SIZE - feet_y < SAND_SIZE:
+                                self.is_grounded = True
+                                return
+
+        elif axis == 'X':
+            # Find the topmost blocking grain across all columns the player overlaps.
+            top_gy = None
+            top_gx = None
+            for gy in range(min_gy, max_gy + 1):
+                for gx in range(min_gx, max_gx + 1):
+                    if (gx, gy) not in sand.occupied:
+                        continue
+                    g_rect = (gx * SAND_SIZE, gy * SAND_SIZE, SAND_SIZE, SAND_SIZE)
+                    if CheckCollisionRecs((self.x, self.y, self.width, self.height), g_rect):
+                        if top_gy is None or gy < top_gy:
+                            top_gy = gy
+                            top_gx = gx
+                        break
+            if top_gy is None:
+                return
+            grain_top_px = top_gy * SAND_SIZE
+            step = (self.y + self.height) - grain_top_px
+            if 0 < step <= STEP_HEIGHT:
+                # Step up over the mound
+                self.y -= step
+            else:
+                # Wall — block horizontal movement
+                if self.vx > 0:
+                    self.x = top_gx * SAND_SIZE - self.width
+                elif self.vx < 0:
+                    self.x = (top_gx + 1) * SAND_SIZE
+                self.vx = 0.0
+
     def check_collection(self, collectibles):
         """Checks for collision with coins and returns indices of collected coins."""
         collected_indices = []

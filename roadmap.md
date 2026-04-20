@@ -65,3 +65,16 @@ Next TODO:
 
 - Do not simulate sand that hasn't been interacted with, propagate interactions to neighbours
 - Possibly divide sand into smaller or bigger particles?
+
+Date 2026/04/20, 02-30
+**Goal**
+Have the falling sand collide with the player
+**Implementation**
+Technical Plan/Credit: AABB implementation for tiles currently in the project
+Content Credit: https://jason.today/falling-sand
+
+Commit Message: Improved Falling sand
+
+Next TODO:
+- Rock Throwing
+- Do not simulate sand that hasn't been interacted with, propagate interactions to neighbours

@@ -33,7 +33,7 @@ class Game():
         
         # --- Update ---
         if self.game_state == "PLAYING":
-            self.player.update(delta_time, self.game_level)
+            self.player.update(delta_time, self.game_level, self.sand)
             
             # Update Enemies
             for enemy in self.enemies:
