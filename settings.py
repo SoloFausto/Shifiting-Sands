@@ -1,40 +1,46 @@
 from pyray import *
 from raylib import *
 
+# --- Expanded Level Tilemap Definition (50x16 tiles = 2000px wide) ---
 
-WINDOW_WIDTH, WINDOW_HEIGHT = 2560, 1800
+LEVEL_PATH = "assets/level.txt"
+TILE_ROWS = len(open(LEVEL_PATH).readlines())
+TILE_COLS = len(open(LEVEL_PATH).readline().strip())
+TILE_SIZE = 40
 
-GRID_AMOUNT_X = 350
-GRID_AMOUNT_Y = 350 
-GAME_CONTROLS = [(KEY_Z,KEY_X),(KEY_N,KEY_M),(KEY_O,KEY_P),(KEY_Q,KEY_W)]
-red_player_color = Color(197, 88, 77,255)
-blue_player_color = Color(78, 77, 197,255)
-green_player_color = Color(108, 209, 99,255)
-yellow_player_color = Color(197, 193, 77,255)
+WINDOW_WIDTH, WINDOW_HEIGHT = 800, 600
+WORLD_WIDTH = TILE_COLS * TILE_SIZE
+WORLD_HEIGHT = TILE_ROWS * TILE_SIZE
 
-PLAYER_COLORS = [red_player_color, green_player_color,yellow_player_color ,blue_player_color]
-PLAYER_COLOR_NAMES = ["red", "green", "yellow", "blue"]
-PLAYER_CONTROL_NAMES = ["Z/X", "N/M", "O/P", "Q/W"]
-TEXTURES = {}
 SOUNDS = {}
 PAUSE_KEY = KEY_BACKSPACE
-WIN_SCORE = 10
+UP_KEY = KEY_W
+DOWN_KEY = KEY_S
+LEFT_KEY = KEY_A
+RIGHT_KEY = KEY_D
+JUMP_KEY = KEY_SPACE
 FONT_SIZE = max(20, int(WINDOW_WIDTH * 0.03))
 
+# --- Game Constants ---
+SCREEN_WIDTH = 800
+SCREEN_HEIGHT = 600
+      # Size of one tile in pixels
+GRAVITY = 1800.0        # Downward acceleration (pixels/s/s)
+JUMP_VELOCITY = -750.0  # Initial upward velocity on jump
+STOMP_BOUNCE = JUMP_VELOCITY * 0.6 # Reduced jump velocity for bounce
+PLAYER_SPEED = 300.0    # Player horizontal movement speed
+ENEMY_SPEED = 100.0     # Enemy horizontal movement speed
+PLAYER_WIDTH = TILE_SIZE * 0.8
+PLAYER_HEIGHT = TILE_SIZE * 0.9
+
+# --- Tilemap Definitions ---
+TEXTURES = {}
 
 
-CELL_SIZE = min(WINDOW_WIDTH // GRID_AMOUNT_X, WINDOW_HEIGHT // GRID_AMOUNT_Y)
-CELL_W = CELL_SIZE
-CELL_H = CELL_SIZE
-#AI helped me with centering the playfield
-PLAYFIELD_WIDTH = CELL_W * GRID_AMOUNT_X
-PLAYFIELD_HEIGHT = CELL_H * GRID_AMOUNT_Y
-PLAYFIELD_OFFSET_X = (WINDOW_WIDTH - PLAYFIELD_WIDTH) // 2
-PLAYFIELD_OFFSET_Y = (WINDOW_HEIGHT - PLAYFIELD_HEIGHT) // 2
+TILE_AIR = 0
+TILE_SOLID = 1
+TILE_COIN = 2
+TILE_ENEMY = 3
+TILE_SAND_BLOCK = 4
 
 
-
-def translateGridtoXY(gridcoord):
-    top_x = PLAYFIELD_OFFSET_X + (CELL_W * gridcoord.x)
-    top_y = PLAYFIELD_OFFSET_Y + (CELL_H * gridcoord.y)
-    return Vector2(top_x,top_y)

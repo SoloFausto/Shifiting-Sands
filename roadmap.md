@@ -51,14 +51,15 @@ Content Credit: Inspiration from this class
 Commit Message: Refactor the game structure
 
 
-Date 2026/04/15, XX-XX
+Date 2026/04/20, 00-30
 **Goal**
 Look into Falling sand rules and have a basic implementation
+Finish the refactor and implement it.
 **Implementation**
 Technical Plan/Credit:
 Content Credit: https://jason.today/falling-sand
 
-Commit Message: Feature: Basic falling sand simulation
+Commit Message: Feature: Basic falling sand simulation and refactor
 
 Next TODO:
 

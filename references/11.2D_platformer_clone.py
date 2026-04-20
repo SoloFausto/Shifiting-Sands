@@ -413,7 +413,7 @@ def main():
     # --- Camera Initialization ---
     camera = Camera2D()
     camera.target = Vector2(player.x, player.y) 
-    camera.offset = Vector2(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2) 
+    camera.offset = Vector2(SCREEN_WIDTH , SCREEN_HEIGHT ) 
     camera.rotation = 0.0
     camera.zoom = 1.0
 

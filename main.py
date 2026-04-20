@@ -38,12 +38,6 @@ if __name__ == '__main__':
       game.draw()
     else:
         draw_text("Shifting Sands", WINDOW_WIDTH//2 - 200, WINDOW_HEIGHT//2 - 200, FONT_SIZE*3, WHITE)
-
-
-
-
-
-
     end_drawing()
 
 close_audio_device()
