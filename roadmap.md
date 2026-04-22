@@ -106,3 +106,16 @@ Next TODO:
 
 - Sand Damage
 - Bring MORE assets
+
+Date 2026/04/22, 12-45
+**Goal**
+Add Sand crushing to both player and enemies, add mineable block type
+**Implementation**
+Technical Plan/Credit: Just coding with some debugging help from AI
+Commit Message: Feature: Sand Crushing, mineable block type
+
+Next TODO:
+
+- Gems
+- Level One Design
+- Add assets

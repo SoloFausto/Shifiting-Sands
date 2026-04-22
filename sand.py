@@ -1,6 +1,7 @@
 import random
 from raylib import *
 from settings import *
+from mineable import STONE_SIZE
 
 SAND_SIZE = 4  # pixels per grain
 
@@ -30,6 +31,19 @@ class SandSimulation:
         self.grains: list[SandGrain] = []
         self.occupied: set[tuple[int, int]] = set()
 
+    def _overlaps_mineable(self, gx: int, gy: int, mineable) -> bool:
+        # got some help from ai for this function
+        min_mx = (gx * SAND_SIZE) // STONE_SIZE
+        max_mx = ((gx + 1) * SAND_SIZE - 1) // STONE_SIZE
+        min_my = (gy * SAND_SIZE) // STONE_SIZE
+        max_my = ((gy + 1) * SAND_SIZE - 1) // STONE_SIZE
+
+        for mx in range(min_mx, max_mx + 1):
+            for my in range(min_my, max_my + 1):
+                if (mx, my) in mineable.occupied:
+                    return True
+        return False
+
     def spawn_block(self, tile_col: int, tile_row: int):
         grains_per_row = TILE_SIZE // SAND_SIZE
         for i in range(grains_per_row):
@@ -40,10 +54,13 @@ class SandSimulation:
                 self.grains.append(grain)
                 self.occupied.add((gx, gy))
 
-    def _is_blocked(self, gx: int, gy: int, level) -> bool:
+    def _is_blocked(self, gx: int, gy: int, level,mineable) -> bool:
         if gx < 0 or gx >= _WORLD_GW or gy >= _WORLD_GH:
             return True
         if (gx, gy) in self.occupied:
+            return True
+
+        if self._overlaps_mineable(gx, gy, mineable):
             return True
         col = (gx * SAND_SIZE) // TILE_SIZE
         row = (gy * SAND_SIZE) // TILE_SIZE
@@ -51,7 +68,7 @@ class SandSimulation:
             return level[row][col] == TILE_SOLID
         return True
 
-    def update(self, level):
+    def update(self, level,mineable):
         # It is important to start at the end https://jason.today/falling-sand
         # accessing the set as a sorted list through a lambda
         ordered_grains = sorted(self.grains, key=lambda g: (g.gy, g.gx), reverse=True)
@@ -61,14 +78,14 @@ class SandSimulation:
             if not grain.active:
                 continue
 
-            if not self._is_blocked(gx, gy + 1, level):
+            if not self._is_blocked(gx, gy + 1, level,mineable):
                 self.occupied.discard((gx, gy))
                 grain.gy += 1
                 self.occupied.add((grain.gx, grain.gy))
             else:
                 dirs = [-1, 1]
                 for dx in dirs:
-                    if not self._is_blocked(gx + dx, gy + 1, level):
+                    if not self._is_blocked(gx + dx, gy + 1, level,mineable) and not self._is_blocked(gx + dx, gy, level,mineable):
                         self.occupied.discard((gx, gy))
                         grain.gx += dx
                         grain.gy += 1

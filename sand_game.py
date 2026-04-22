@@ -1,19 +1,24 @@
 import raylib
 import pyray
 from settings import *
-from utils import parse_level
+from utils import *
+
 from enemy import Enemy
 from player import Player
 from sand import SandSimulation
 from stone import Stone
+from mineable import MineableSimulation
 
 class Game():
     def __init__(self):
         self.isGameOver = True
-        self.game_level, self.collectibles, self.enemies, sand_spawns = parse_level(LEVEL_PATH)
+        self.game_level, self.collectibles, self.enemies, sand_spawns,mineable_spawns = parse_level(LEVEL_PATH)
         self.sand = SandSimulation()
+        self.mineable = MineableSimulation()
         for col, row in sand_spawns:
             self.sand.spawn_block(col, row)
+        for col, row in mineable_spawns:
+            self.mineable.spawn_block(col, row)
         TEXTURES["block"] = load_texture("assets/sand.png")
         TEXTURES["bg"] = load_texture("assets/bg.png")
         # Game State Variables
@@ -35,13 +40,14 @@ class Game():
         
         # --- Update ---
         if self.game_state == "PLAYING":
-            self.player.update(delta_time, self.game_level, self.sand)
+            self.player.update(delta_time, self.game_level, self.sand,self.mineable)
             
             # Update Enemies
             for enemy in self.enemies:
                 enemy.update(delta_time, self.game_level, self.player, self.enemies)
 
-            self.sand.update(self.game_level)
+            self.sand.update(self.game_level,self.mineable)
+            self.mineable.update(self.game_level)
 
             # Throw stone toward world-space mouse on left click
             if IsMouseButtonPressed(MOUSE_BUTTON_LEFT):
@@ -52,7 +58,7 @@ class Game():
                 self.stones.append(Stone(cx, cy, mouse_world.x, mouse_world.y))
 
             for stone in self.stones:
-                stone.update(delta_time, self.game_level, self.sand)
+                stone.update(delta_time, self.game_level, self.sand,self.mineable)
             self.stones = [s for s in self.stones if s.active]
 
             self.update_camera(WORLD_WIDTH, WORLD_HEIGHT, SCREEN_WIDTH, SCREEN_HEIGHT)
@@ -64,19 +70,22 @@ class Game():
                     self.collectibles.pop(index)
                     self.score += 10
             
-            # Check for enemy collision (Stomp/Death/Reset)
-            hit_type, enemy_index = self.player.check_enemy_collision(self.enemies)
-
-            if hit_type == "STOMP":
-                # Stomp mechanic: Remove enemy, score, and bounce
-                self.enemies.pop(enemy_index)
-                self.score += 100 
-                self.player.vy = STOMP_BOUNCE # Player bounces up
-                
-            elif hit_type == "LETHAL":
+            # Check for enemy collisions
+            if self.player.check_enemy_collision(self.enemies):
                 # Death/Reset mechanic: Penalty and restart
                 self.player.reset()
                 self.score -= 50 
+                if self.score < 0: self.score = 0
+                
+            for enemy in self.enemies:
+                if check_sand_crush(self.sand,enemy.get_rect()):
+                    self.enemies.pop(self.enemies.index(enemy))
+                    self.score += 20
+                    break
+            
+            if check_sand_crush(self.sand,self.player.get_rect()):
+                self.player.reset()
+                self.score -= 20 
                 if self.score < 0: self.score = 0
             
         
@@ -95,6 +104,9 @@ class Game():
         # 2. Draw Sand
         self.sand.draw()
 
+        # 3. Draw Mineable
+        self.mineable.draw()
+        
         # 4. Draw Collectibles
         self.draw_coins(self.collectibles)
 

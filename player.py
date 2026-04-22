@@ -4,6 +4,7 @@ from raylib import *
 from pyray import *
 from settings import *
 from sand import SAND_SIZE
+from mineable import STONE_SIZE
 
 STEP_HEIGHT = 20  # max pixel height the player can step up over a sand mound
 class Player:
@@ -26,7 +27,7 @@ class Player:
         """Returns the player's collision bounding box (top-left, width, height)."""
         return (self.x, self.y, self.width, self.height)
 
-    def update(self, delta_time, level, sand=None):
+    def update(self, delta_time, level, sand=None,mineable=None):
         # 1. Handle Input (Horizontal Movement)
         self.vx = 0.0
         if IsKeyDown(KEY_LEFT) or IsKeyDown(KEY_A):
@@ -56,13 +57,17 @@ class Player:
         self.x += self.vx * delta_time
         self.handle_tile_collision(level, 'X')
         if sand:
-            self.handle_sand_collision(sand, 'X')
+            self.handle_sand_collision(sand, 'X',SAND_SIZE)
+        if mineable:
+            self.handle_sand_collision(mineable, 'X',STONE_SIZE)
 
         # Apply Y movement
         self.y += self.vy * delta_time
         self.handle_tile_collision(level, 'Y')
         if sand:
-            self.handle_sand_collision(sand, 'Y')
+            self.handle_sand_collision(sand, 'Y',SAND_SIZE)
+        if mineable:
+            self.handle_sand_collision(mineable, 'Y',STONE_SIZE)
         
         # --- Safety Clamp to World Bounds ---
         self.x = max(0, min(self.x, WORLD_WIDTH - self.width))
@@ -107,13 +112,13 @@ class Player:
                         player_rect = self.get_rect()
                         px, py, pw, ph = player_rect
                         
-    def handle_sand_collision(self, sand, axis):
+    def handle_sand_collision(self, sand, axis,size):
         # Function largely done with the help of AI.
         px, py, pw, ph = self.x, self.y, self.width, self.height
-        min_gx = int(px / SAND_SIZE)
-        max_gx = int((px + pw - 1) / SAND_SIZE)
-        min_gy = int(py / SAND_SIZE)
-        max_gy = int((py + ph - 1) / SAND_SIZE)
+        min_gx = int(px / size)
+        max_gx = int((px + pw - 1) / size)
+        min_gy = int(py / size)
+        max_gy = int((py + ph - 1) / size)
 
         if axis == 'Y':
             # Find the topmost grain (smallest gy) that overlaps the player.
@@ -122,25 +127,25 @@ class Player:
                 for gx in range(min_gx, max_gx + 1):
                     if (gx, gy) not in sand.occupied:
                         continue
-                    g_rect = (gx * SAND_SIZE, gy * SAND_SIZE, SAND_SIZE, SAND_SIZE)
+                    g_rect = (gx * size, gy * size, size, size)
                     if CheckCollisionRecs((self.x, self.y, self.width, self.height), g_rect):
                         if top_gy is None or gy < top_gy:
                             top_gy = gy
                         break
             if top_gy is not None:
                 if self.vy >= 0:
-                    self.y = top_gy * SAND_SIZE - self.height
+                    self.y = top_gy * size - self.height
                     self.is_grounded = True
                 else:
-                    self.y = (top_gy + 1) * SAND_SIZE
+                    self.y = (top_gy + 1) * size
                 self.vy = 0.0
             elif self.vy >= 0:
                 feet_y = self.y + self.height
-                probe_gy = int(feet_y / SAND_SIZE)
+                probe_gy = int(feet_y / size)
                 for g in [probe_gy, probe_gy + 1]:
                     for gx in range(min_gx, max_gx + 1):
                         if (gx, g) in sand.occupied:
-                            if g * SAND_SIZE - feet_y < SAND_SIZE:
+                            if g * size - feet_y < size:
                                 self.is_grounded = True
                                 return
 
@@ -152,7 +157,7 @@ class Player:
                 for gx in range(min_gx, max_gx + 1):
                     if (gx, gy) not in sand.occupied:
                         continue
-                    g_rect = (gx * SAND_SIZE, gy * SAND_SIZE, SAND_SIZE, SAND_SIZE)
+                    g_rect = (gx * size, gy * size, size, size)
                     if CheckCollisionRecs((self.x, self.y, self.width, self.height), g_rect):
                         if top_gy is None or gy < top_gy:
                             top_gy = gy
@@ -160,7 +165,7 @@ class Player:
                         break
             if top_gy is None:
                 return
-            grain_top_px = top_gy * SAND_SIZE
+            grain_top_px = top_gy * size
             step = (self.y + self.height) - grain_top_px
             if 0 < step <= STEP_HEIGHT:
                 # Step up over the mound
@@ -168,9 +173,9 @@ class Player:
             else:
                 # Wall — block horizontal movement
                 if self.vx > 0:
-                    self.x = top_gx * SAND_SIZE - self.width
+                    self.x = top_gx * size - self.width
                 elif self.vx < 0:
-                    self.x = (top_gx + 1) * SAND_SIZE
+                    self.x = (top_gx + 1) * size
                 self.vx = 0.0
 
     def check_collection(self, collectibles):
@@ -190,30 +195,17 @@ class Player:
         return collected_indices
     
     def check_enemy_collision(self, enemies):
-        """Checks for collision with enemies and determines outcome (stomp or death).
-        Returns (hit_type, enemy_index) or (None, -1).
-        hit_type: "STOMP" (safe kill) or "LETHAL" (death)
-        """
         player_rect = self.get_rect()
         px, py, pw, ph = player_rect
         
-        for i, enemy in enumerate(enemies):
+        for enemy in enemies:
             enemy_rect = enemy.get_rect()
             
             if CheckCollisionRecs(player_rect, enemy_rect):
-                
-                # STOMP Condition: 
-                # 1. Player is falling (vy > 0) 
-                # 2. Player's bottom is above the enemy's mid-point (approximate stomping zone)
-                is_stompable_zone = py + ph < enemy.y + enemy.height * 0.5 
-                
-                if self.vy > 0 and is_stompable_zone:
-                    return "STOMP", i
-                else:
-                    # Lethal collision (side, head, or missing the stomp zone)
-                    return "LETHAL", i
+                    return True
                     
-        return None, -1
+        return False
+
     
     def reset(self):
         """Resets the player to their starting position."""
