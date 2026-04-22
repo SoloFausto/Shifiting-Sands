@@ -50,7 +50,6 @@ Technical Plan/Credit: I'm going to be following the same structure as in my mid
 Content Credit: Inspiration from this class
 Commit Message: Refactor the game structure
 
-
 Date 2026/04/20, 00-30
 **Goal**
 Look into Falling sand rules and have a basic implementation
@@ -77,6 +76,7 @@ Content Credit:
 Commit Message: Improved Falling sand
 
 Next TODO:
+
 - Rock Throwing
 - Do not simulate sand that hasn't been interacted with, propagate interactions to neighbours
 
@@ -85,10 +85,24 @@ Date 2026/04/20, 04-00
 Throw rocks to make sand clumps fall
 **Implementation**
 Technical Plan/Credit: Class material for the rock trajectory, AI with the recursive nature of toggling the sand grains active
-Content Credit: 
+Content Credit:
 
 Commit Message: Feature: Throwable rocks, falling clumps of sand
 
 Next TODO:
+
 - Sand damage to both the player and enemies when falling
 - Start bringing assets
+
+Date 2026/04/22, 05-00
+**Goal**
+Refine the sand clump falling
+**Implementation**
+Just a regular while loop with a stack
+
+Commit Message: Bugfix: Sand, added extra materials
+
+Next TODO:
+
+- Sand Damage
+- Bring MORE assets

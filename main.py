@@ -21,7 +21,7 @@ if __name__ == '__main__':
   while not window_should_close():
     update_music_stream(music)
     if game.isGameOver:
-      if isTitleScreen:
+      if isTitleScreen: 
         if IsKeyPressed(KEY_ENTER):
             game.isGameOver = False
             isTitleScreen = False

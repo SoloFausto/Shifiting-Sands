@@ -14,7 +14,7 @@ class Game():
         self.sand = SandSimulation()
         for col, row in sand_spawns:
             self.sand.spawn_block(col, row)
-        TEXTURES["block"] = load_texture("assets/block.png")
+        TEXTURES["block"] = load_texture("assets/sand.png")
         TEXTURES["bg"] = load_texture("assets/bg.png")
         # Game State Variables
         # Player starts at TILE_SIZE * 2, TILE_SIZE * 2

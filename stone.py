@@ -46,19 +46,19 @@ class Stone:
            
     def toggle_sand_clump_active(self, sand, gx, gy):
         colided_grain = [g for g in sand.grains if g.gx == gx and g.gy == gy][0]
-        colided_grain.active = True                    
-        while True:
-            found_new = False
+        
+        colided_grain.active = True       
+                     
+        to_visit = [colided_grain]
+
+        while to_visit:
+            current = to_visit.pop()
             for other in sand.grains:
                 if other.active:
                     continue
-                if abs(other.gx - colided_grain.gx) <= 1 and abs(other.gy - colided_grain.gy) <= 1:
+                if abs(other.gx - current.gx) <= 1 and abs(other.gy - current.gy) <= 1:
                     other.active = True
-                    colided_grain = other
-                    found_new = True
-                    break
-            if not found_new:
-                break
+                    to_visit.append(other)
 
     def draw(self):
         if self.active:
