@@ -21,6 +21,12 @@ class Game():
             self.mineable.spawn_block(col, row)
         TEXTURES["block"] = load_texture("assets/sand.png")
         TEXTURES["bg"] = load_texture("assets/bg.png")
+        TEXTURES["player_idle"] = load_texture("assets/idle.png")
+        TEXTURES["player_walk"] = load_texture("assets/walking.png")
+        TEXTURES["player_jump"] = load_texture("assets/jumping.png")
+        TEXTURES["player_mine"] = load_texture("assets/mine.png")
+        TEXTURES["player_throw"] = load_texture("assets/rock_throw.png")
+        TEXTURES["enemy"] = load_texture("assets/enemy.png")
         # Game State Variables
         # Player starts at TILE_SIZE * 2, TILE_SIZE * 2
         self.player = Player(TILE_SIZE * 2, TILE_SIZE * 2) 
@@ -51,12 +57,18 @@ class Game():
 
             # Throw stone toward world-space mouse on left click
             if IsMouseButtonPressed(MOUSE_BUTTON_LEFT):
+                self.player.is_throwing = True
+                self.player.is_mining = False
+                self.player.action_timer = 0.0
                 rock_lifetime = 5.0
                 is_mining = False
 
                 self.spawn_stone(rock_lifetime,is_mining)
             
             if IsKeyDown(KEY_E):
+                self.player.is_throwing = False
+                self.player.is_mining = True
+                self.player.action_timer = 0.0
                 rock_lifetime = 0.1
                 is_mining = True
                 self.spawn_stone(rock_lifetime,is_mining)
@@ -89,7 +101,8 @@ class Game():
                     self.enemies.pop(self.enemies.index(enemy))
                     self.score += 20
                     break
-            
+
+
             if check_sand_crush(self.sand,self.player.get_rect()):
                 self.player.reset()
                 self.score -= 20 
@@ -103,12 +116,12 @@ class Game():
         self.stones.append(Stone(cx, cy, mouse_world.x, mouse_world.y, rock_lifetime, is_mining))
         
     def draw(self):
-        ClearBackground(SKYBLUE)
+        ClearBackground(Color(208,176,128,255))
         # Start the 2D camera mode
         BeginMode2D(self.camera)
         draw_texture_pro(TEXTURES["bg"], 
                     Rectangle(0, 0, TEXTURES["bg"].width, TEXTURES["bg"].height),
-                    Rectangle(0, 0, WORLD_WIDTH, WORLD_HEIGHT),
+                    Rectangle(0, 0, WORLD_WIDTH, WORLD_HEIGHT/2 + 1200),
                     Vector2(0, 0), 0.0, WHITE)
 
         # 1. Draw the Level

@@ -24,8 +24,8 @@ JUMP_KEY = KEY_SPACE
 FONT_SIZE = max(20, int(WINDOW_WIDTH * 0.03))
 
 # --- Game Constants ---
-SCREEN_WIDTH = 800
-SCREEN_HEIGHT = 600
+SCREEN_WIDTH = WINDOW_WIDTH
+SCREEN_HEIGHT = WINDOW_HEIGHT
       # Size of one tile in pixels
 GRAVITY = 1800.0        # Downward acceleration (pixels/s/s)
 JUMP_VELOCITY = -750.0  # Initial upward velocity on jump

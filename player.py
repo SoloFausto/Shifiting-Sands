@@ -7,6 +7,7 @@ from sand import SAND_SIZE
 from mineable import STONE_SIZE
 
 STEP_HEIGHT = 20  # max pixel height the player can step up over a sand mound
+
 class Player:
     def __init__(self, x, y):
         # Store starting position for reset
@@ -23,6 +24,11 @@ class Player:
         self.vy = 0.0
         self.is_grounded = False
         
+        self.draw_state = 0
+        self.animation_timer = 0.0
+        self.is_mining = False
+        self.is_throwing = False
+        self.action_timer = 0.0
         # Facing direction (1 for right, -1 for left)
         self.facing = 1
 
@@ -41,17 +47,12 @@ class Player:
             self.facing = 1
 
         # 1.5 Handle Mining Input
-        if IsKeyPressed(KEY_F) and mineable:
-            mine_width = 40
-            mine_height = self.height
-            mine_x = self.x + self.width if self.facing == 1 else self.x - mine_width
+        if IsKeyPressed(KEY_E) and mineable:
+            self.action_timer = 0.0
+            mine_x = self.x + self.width if self.facing == 1 else self.x 
             mine_y = self.y
-            mine_point_x = mine_x + (mine_width / 2)
-            mine_point_y = mine_y + (mine_height / 2)
-            mine_gx = int(mine_point_x / STONE_SIZE)
-            mine_gy = int(mine_point_y / STONE_SIZE)
-            if (mine_gx, mine_gy) in mineable.occupied:
-                mineable.toggle_mineable_clump_active(mine_gx, mine_gy)
+            if (mine_x, mine_y) in mineable.occupied:
+                mineable.toggle_mineable_clump_active(mine_x, mine_y)
             
             
 
@@ -71,6 +72,23 @@ class Player:
 
         # --- Reset grounded state at start of frame update ---
         self.is_grounded = False
+
+        # --- Animation update ---
+        if self.is_mining or self.is_throwing:
+            self.action_timer += delta_time
+            if self.action_timer > 0.3:
+                self.is_mining = False
+                self.is_throwing = False
+                self.action_timer = 0.0
+
+        if self.vx != 0.0:
+            self.animation_timer += delta_time
+            if self.animation_timer > 0.1: # 0.1s per frame
+                self.draw_state = (self.draw_state + 1) % 3
+                self.animation_timer = 0.0
+        else:
+            self.draw_state = 0
+            self.animation_timer = 0.0
 
         # 4. Apply Movement (Separated for X and Y collision checks)
         
@@ -240,8 +258,37 @@ class Player:
 
     def draw(self):
         """Draws the player at their world coordinates."""
-        DrawRectangle(int(self.x), int(self.y), int(self.width), int(self.height), BLUE) 
-        if self.is_grounded:
-             DrawRectangleLines(int(self.x), int(self.y), int(self.width), int(self.height), WHITE)
+        tex = None
+        frame_width = 32
+        
+        if self.is_mining:
+            tex = TEXTURES["player_mine"]
+            frame_width = tex.width / 3
+            frame = min(2, int((self.action_timer / 0.3) * 3))
+            src_rect = Rectangle(frame * frame_width, 0, frame_width * self.facing, tex.height)
+        elif self.is_throwing:
+            tex = TEXTURES["player_throw"]
+            frame_width = tex.width / 2
+            frame = min(1, int((self.action_timer / 0.3) * 2))
+            src_rect = Rectangle(frame * frame_width, 0, frame_width * self.facing, tex.height)
+        elif not self.is_grounded:
+            tex = TEXTURES["player_jump"]
+            frame_width = tex.width
+            src_rect = Rectangle(0, 0, tex.width * self.facing, tex.height)
+        elif self.vx != 0.0:
+            tex = TEXTURES["player_walk"]
+            frame_width = tex.width / 3
+            src_rect = Rectangle(self.draw_state * frame_width, 0, frame_width * self.facing, tex.height)
         else:
-             DrawRectangleLines(int(self.x), int(self.y), int(self.width), int(self.height), GRAY)
+            tex = TEXTURES["player_idle"]
+            frame_width = tex.width
+            src_rect = Rectangle(0, 0, tex.width * self.facing, tex.height)
+            
+        scale = self.height / 32.0
+        draw_width = frame_width * scale
+        draw_height = tex.height * scale
+
+        dest_rect = Rectangle(self.x + self.width / 2, self.y + self.height, draw_width, draw_height)
+        origin = Vector2(draw_width / 2, draw_height)
+        draw_texture_pro(tex, src_rect, dest_rect, origin, 0.0, WHITE)
+    

@@ -4,11 +4,11 @@ from settings import *
 
 
 _STONE_COLORS = [
-    Color(50, 50, 150, 255),
-    Color(75, 40, 30, 255),
-    Color(32, 67, 32, 255),
-    Color(55, 55, 55, 255),
-    Color(40, 23, 55, 255),
+    Color(117, 117, 117, 255),
+    Color(27, 23, 37, 255),
+    Color(41, 40, 0 , 255),
+    Color(24, 29, 39, 255),
+    Color(9, 3, 2, 255),
 ]
 
 _WORLD_GW = (TILE_COLS * TILE_SIZE) // STONE_SIZE

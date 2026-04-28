@@ -12,7 +12,7 @@ class Enemy:
         self.height = TILE_SIZE * 0.7
         
         # Physics/Movement
-        self.vx = 0.0 # Start moving right
+        self.vx = getattr(self, 'vx', ENEMY_SPEED) # Start moving right
         self.vy = 0.0 
         self.is_grounded = False
 
@@ -32,25 +32,13 @@ class Enemy:
         # Apply X movement
         self.x += self.vx * delta_time
         self.handle_tile_collision(level, 'X')
+        self.handle_enemy_collision(enemies, 'X')
         
         # Apply Y movement
         self.y += self.vy * delta_time
         self.handle_tile_collision(level, 'Y')
-        
-        if self.x != player.x and self.y != player.y:
-
-            for enemy in enemies:
-                if enemy != self and not CheckCollisionRecs(self.get_rect(), enemy.get_rect()):
-                    if self.x != player.x:
-                        if self.x < player.x:
-                            self.vx = ENEMY_SPEED
-                        else:
-                            self.vx = -ENEMY_SPEED
+        self.handle_enemy_collision(enemies, 'Y')
                             
-
-
-            
-
     def handle_tile_collision(self, level, axis):
         """Enemy collision: reverses direction on horizontal wall contact, respects vertical floor contact."""
         enemy_rect = self.get_rect()
@@ -89,22 +77,47 @@ class Enemy:
                             
                         enemy_rect = self.get_rect() # Update rect after resolution
 
+    def handle_enemy_collision(self, enemies, axis):
+        enemy_rect = self.get_rect()
+        for other in enemies:
+            if other == self:
+                continue
+            other_rect = other.get_rect()
+            if CheckCollisionRecs(enemy_rect, other_rect):
+                if axis == 'X':
+                    if self.x < other.x:
+                        self.x = other.x - self.width
+                        self.vx = -abs(self.vx)
+                        other.vx = abs(other.vx)
+                    else:
+                        self.x = other.x + other.width
+                        self.vx = abs(self.vx)
+                        other.vx = -abs(other.vx)
+                elif axis == 'Y':
+                    if self.y < other.y:
+                        self.y = other.y - self.height
+                        self.is_grounded = True
+                        self.vy = 0.0
+                    else:
+                        self.y = other.y + other.height
+                        self.vy = 0.0
+                enemy_rect = self.get_rect()
+
     def draw(self):
-        """Draws the enemy as a red rectangle with a directional indicator."""
-        DrawRectangle(int(self.x), int(self.y), int(self.width), int(self.height), RED)
-        DrawRectangleLines(int(self.x), int(self.y), int(self.width), int(self.height), BLACK)
-        
-        # Draw a small indicator for direction
-        center_x = self.x + self.width / 2
-        center_y = self.y + self.height / 2
-        indicator_size = self.width * 0.2
-        
+        tex = TEXTURES["enemy"]
+        frame_width = tex.width
+
         if self.vx > 0: # Moving Right
-            DrawTriangle(Vector2(center_x + indicator_size, center_y), 
-                         Vector2(center_x - indicator_size, center_y - indicator_size), 
-                         Vector2(center_x - indicator_size, center_y + indicator_size), WHITE)
-        elif self.vx < 0: # Moving Left
-            DrawTriangle(Vector2(center_x - indicator_size, center_y), 
-                         Vector2(center_x + indicator_size, center_y - indicator_size), 
-                         Vector2(center_x + indicator_size, center_y + indicator_size), WHITE)
+            src_rect = Rectangle(0, 0, tex.width , tex.height)
+
+        else: # Moving Left
+            src_rect = Rectangle(0, 0, tex.width * -1, tex.height)
+            
+        scale = self.height / 32.0
+        draw_width = frame_width * scale
+        draw_height = tex.height * scale
+
+        dest_rect = Rectangle(self.x + self.width / 2, self.y + self.height, draw_width, draw_height)
+        origin = Vector2(draw_width / 2, draw_height)
+        draw_texture_pro(tex, src_rect, dest_rect, origin, 0.0, WHITE)
 

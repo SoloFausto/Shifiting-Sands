@@ -31,6 +31,9 @@ def parse_level(path):
             elif new_level[r][c] == TILE_MINEABLE:
                 mineable_spawns.append((c, r))
                 new_level[r][c] = TILE_AIR
+            elif new_level[r][c] == TILE_COIN:
+                coins.append((x + TILE_SIZE / 2, y + TILE_SIZE / 2))
+                new_level[r][c] = TILE_AIR
 
     return new_level, coins, enemies, sand_spawns, mineable_spawns
 

@@ -132,3 +132,16 @@ Next TODO:
 - Gems
 - Dynamite
 - Add assets
+
+Date 2026/04/28, 12-45
+**Goal**
+Add most important assets with animations, fix enemy behaviour, expand level 1
+**Implementation**
+Technical Plan/Credit: Coolors color picker was used to pick some colors, gemini and chatGPT image generation was used to generate the basic assets which were then edited with GIMP.
+Commit Message: Added player and enemy assets, expanded level 1, fixed enemy behaviour.
+
+Next TODO:
+
+- Gems
+- Dynamite
+- Slight enemy fix
