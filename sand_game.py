@@ -30,7 +30,7 @@ class Game():
         
         # --- Camera Initialization ---
         self.camera = Camera2D()
-        self.camera.target = Vector2(self.player.x, self.player.y) 
+        self.camera.target = Vector2(self.player.x, self.player.y + self.player.height / 2) 
         self.camera.offset = Vector2(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2) 
         self.camera.rotation = 0.0
         self.camera.zoom = 1.0
@@ -51,11 +51,18 @@ class Game():
 
             # Throw stone toward world-space mouse on left click
             if IsMouseButtonPressed(MOUSE_BUTTON_LEFT):
-                mouse_screen = GetMousePosition()
-                mouse_world = GetScreenToWorld2D(mouse_screen, self.camera)
-                cx = self.player.x + self.player.width / 2
-                cy = self.player.y + self.player.height / 2
-                self.stones.append(Stone(cx, cy, mouse_world.x, mouse_world.y))
+                rock_lifetime = 5.0
+                is_mining = False
+
+                self.spawn_stone(rock_lifetime,is_mining)
+            
+            if IsKeyDown(KEY_E):
+                rock_lifetime = 0.1
+                is_mining = True
+                self.spawn_stone(rock_lifetime,is_mining)
+            
+            
+
 
             for stone in self.stones:
                 stone.update(delta_time, self.game_level, self.sand,self.mineable)
@@ -87,7 +94,13 @@ class Game():
                 self.player.reset()
                 self.score -= 20 
                 if self.score < 0: self.score = 0
-            
+    
+    def spawn_stone(self, rock_lifetime, is_mining):
+        mouse_screen = GetMousePosition()
+        mouse_world = GetScreenToWorld2D(mouse_screen, self.camera)
+        cx = self.player.x + self.player.width / 2
+        cy = self.player.y + self.player.height / 2
+        self.stones.append(Stone(cx, cy, mouse_world.x, mouse_world.y, rock_lifetime, is_mining))
         
     def draw(self):
         ClearBackground(SKYBLUE)
@@ -171,7 +184,7 @@ class Game():
         """Centers the camera on the player and clamps the camera's target to the world bounds."""
         
         self.camera.target.x = self.player.x + self.player.width / 2
-        self.camera.target.y = self.player.y + self.player.height / 2
+        self.camera.target.y = self.player.y - self.player.height * 2
 
         min_x = screen_width / 2
         max_x = world_width - screen_width / 2

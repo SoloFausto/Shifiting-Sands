@@ -22,6 +22,9 @@ class Player:
         self.vx = 0.0
         self.vy = 0.0
         self.is_grounded = False
+        
+        # Facing direction (1 for right, -1 for left)
+        self.facing = 1
 
     def get_rect(self):
         """Returns the player's collision bounding box (top-left, width, height)."""
@@ -32,8 +35,25 @@ class Player:
         self.vx = 0.0
         if IsKeyDown(KEY_LEFT) or IsKeyDown(KEY_A):
             self.vx = -PLAYER_SPEED
+            self.facing = -1
         if IsKeyDown(KEY_RIGHT) or IsKeyDown(KEY_D):
             self.vx = PLAYER_SPEED
+            self.facing = 1
+
+        # 1.5 Handle Mining Input
+        if IsKeyPressed(KEY_F) and mineable:
+            mine_width = 40
+            mine_height = self.height
+            mine_x = self.x + self.width if self.facing == 1 else self.x - mine_width
+            mine_y = self.y
+            mine_point_x = mine_x + (mine_width / 2)
+            mine_point_y = mine_y + (mine_height / 2)
+            mine_gx = int(mine_point_x / STONE_SIZE)
+            mine_gy = int(mine_point_y / STONE_SIZE)
+            if (mine_gx, mine_gy) in mineable.occupied:
+                mineable.toggle_mineable_clump_active(mine_gx, mine_gy)
+            
+            
 
         # --- Velocity Zeroing for Stability ---
         if self.is_grounded:
@@ -42,6 +62,7 @@ class Player:
         # 2. Handle Input (Jump)
         if (IsKeyPressed(KEY_SPACE) or IsKeyPressed(KEY_UP)) and self.is_grounded:
             self.vy = JUMP_VELOCITY
+
 
         # 3. Apply Gravity
         self.vy += GRAVITY * delta_time
@@ -57,18 +78,19 @@ class Player:
         self.x += self.vx * delta_time
         self.handle_tile_collision(level, 'X')
         if sand:
-            self.handle_sand_collision(sand, 'X',SAND_SIZE)
+            self.handle_sand_collision(sand, sand.toggle_sand_clump_active, 'X',SAND_SIZE)
+            
         if mineable:
-            self.handle_sand_collision(mineable, 'X',STONE_SIZE)
+            self.handle_sand_collision(mineable, lambda gx, gy: None, 'X',STONE_SIZE)
 
         # Apply Y movement
         self.y += self.vy * delta_time
         self.handle_tile_collision(level, 'Y')
         if sand:
-            self.handle_sand_collision(sand, 'Y',SAND_SIZE)
+            self.handle_sand_collision(sand,sand.toggle_sand_clump_active, 'Y',SAND_SIZE)
         if mineable:
-            self.handle_sand_collision(mineable, 'Y',STONE_SIZE)
-        
+            self.handle_sand_collision(mineable, lambda gx, gy: None, 'Y',STONE_SIZE)
+
         # --- Safety Clamp to World Bounds ---
         self.x = max(0, min(self.x, WORLD_WIDTH - self.width))
         
@@ -112,7 +134,7 @@ class Player:
                         player_rect = self.get_rect()
                         px, py, pw, ph = player_rect
                         
-    def handle_sand_collision(self, sand, axis,size):
+    def handle_sand_collision(self, sand, toggle_clump_active, axis, size):
         # Function largely done with the help of AI.
         px, py, pw, ph = self.x, self.y, self.width, self.height
         min_gx = int(px / size)
@@ -145,6 +167,7 @@ class Player:
                 for g in [probe_gy, probe_gy + 1]:
                     for gx in range(min_gx, max_gx + 1):
                         if (gx, g) in sand.occupied:
+                            toggle_clump_active(gx, g)
                             if g * size - feet_y < size:
                                 self.is_grounded = True
                                 return

@@ -2,7 +2,6 @@ import random
 from raylib import *
 from settings import *
 
-STONE_SIZE = 8  # pixels per grain
 
 _STONE_COLORS = [
     Color(50, 50, 150, 255),
@@ -50,6 +49,20 @@ class MineableSimulation:
         if 0 <= row < TILE_ROWS and 0 <= col < TILE_COLS:
             return level[row][col] == TILE_SOLID
         return True
+    def toggle_mineable_clump_active(self, gx, gy):
+        colided_grain = [g for g in self.grains if g.gx == gx and g.gy == gy][0]
+        
+        colided_grain.active = True       
+                        
+        to_visit = [colided_grain]
+
+        while to_visit:
+            current = to_visit.pop()
+            for other in self.grains:
+                if other.active:
+                    continue
+                if abs(other.gx - current.gx) <= 2 and abs(other.gy - current.gy) <= 2:
+                    other.active = True
 
     def update(self, level):
         # It is important to start at the end https://jason.today/falling-sand

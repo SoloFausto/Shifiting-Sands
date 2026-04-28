@@ -3,10 +3,12 @@ from raylib import *
 
 # --- Expanded Level Tilemap Definition (50x16 tiles = 2000px wide) ---
 
-LEVEL_PATH = "assets/level.txt"
+LEVEL_PATH = "assets/level1.txt"
 TILE_ROWS = len(open(LEVEL_PATH).readlines())
 TILE_COLS = len(open(LEVEL_PATH).readline().strip())
-TILE_SIZE = 40
+TILE_SIZE = 80
+SAND_SIZE = 8  # pixels per grain
+STONE_SIZE = 8
 
 WINDOW_WIDTH, WINDOW_HEIGHT = 1024, 768
 WORLD_WIDTH = TILE_COLS * TILE_SIZE

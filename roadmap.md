@@ -119,3 +119,16 @@ Next TODO:
 - Gems
 - Level One Design
 - Add assets
+
+Date 2026/04/28, 04-00
+**Goal**
+Add a preliminary level one, along with a mining ability, adjust tile size and the camera positon.
+**Implementation**
+Technical Plan/Credit: Google sheets was used to create the levels, inspired by Edgar's approach
+Commit Message: Level one, mining ability, minor adjustments.
+
+Next TODO:
+
+- Gems
+- Dynamite
+- Add assets
