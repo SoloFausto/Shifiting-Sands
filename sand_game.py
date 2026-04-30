@@ -50,7 +50,7 @@ class Game():
             
             # Update Enemies
             for enemy in self.enemies:
-                enemy.update(delta_time, self.game_level, self.player, self.enemies)
+                enemy.update(delta_time, self.game_level, self.player, self.enemies,self.sand,self.mineable)
 
             self.sand.update(self.game_level,self.mineable)
             self.mineable.update(self.game_level)

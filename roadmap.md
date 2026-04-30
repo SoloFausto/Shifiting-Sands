@@ -145,3 +145,20 @@ Next TODO:
 - Gems
 - Dynamite
 - Slight enemy fix
+
+Date 2026/04/29
+**Goal**
+Change enemy sprite, further fix enemy interactions with sand, subdivide sand particles
+**Implementation**
+Technical plan: Just my hard own thinking :), reused the sand step code from the player
+Enemy sprite available at https://opengameart.org/content/super-dead-gunner-new-enemy-grenademortar-guy
+
+Commit Message: Enemy update, sand refining.
+
+Next TODO:
+
+- Gems
+- Dynamite
+- Level 2 implementation
+- Bring extra assets
+- Dialogues/menus,etc.

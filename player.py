@@ -6,7 +6,6 @@ from settings import *
 from sand import SAND_SIZE
 from mineable import STONE_SIZE
 
-STEP_HEIGHT = 20  # max pixel height the player can step up over a sand mound
 
 class Player:
     def __init__(self, x, y):

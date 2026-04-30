@@ -3,7 +3,7 @@ from raylib import *
 
 # --- Expanded Level Tilemap Definition (50x16 tiles = 2000px wide) ---
 
-LEVEL_PATH = "assets/level1.txt"
+LEVEL_PATH = "assets/test.txt"
 TILE_ROWS = len(open(LEVEL_PATH).readlines())
 TILE_COLS = len(open(LEVEL_PATH).readline().strip())
 TILE_SIZE = 80
@@ -34,6 +34,7 @@ PLAYER_SPEED = 300.0    # Player horizontal movement speed
 ENEMY_SPEED = 100.0     # Enemy horizontal movement speed
 PLAYER_WIDTH = TILE_SIZE * 0.8
 PLAYER_HEIGHT = TILE_SIZE * 0.9
+STEP_HEIGHT = 20  # max pixel height the player can step up over a sand mound
 
 # --- Tilemap Definitions ---
 TEXTURES = {}

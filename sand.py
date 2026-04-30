@@ -21,7 +21,7 @@ class SandGrain:
         self.gx = gx
         self.gy = gy
         self.active = False
-        self.color = random.choice(_SAND_COLORS)
+        self.color = [random.choice(_SAND_COLORS) for _ in range(4)]
 
 
 class SandSimulation:
@@ -108,10 +108,32 @@ class SandSimulation:
                         break
     def draw(self):
         for grain in self.grains:
+            half_size = SAND_SIZE // 2
             DrawRectangle(
                 grain.gx * SAND_SIZE,
                 grain.gy * SAND_SIZE,
-                SAND_SIZE,
-                SAND_SIZE,
-                grain.color,
+                half_size,
+                half_size,
+                grain.color[0],
+            )
+            DrawRectangle(
+                grain.gx * SAND_SIZE + half_size,
+                grain.gy * SAND_SIZE,
+                half_size,
+                half_size,
+                grain.color[1],
+            )
+            DrawRectangle(
+                grain.gx * SAND_SIZE,
+                grain.gy * SAND_SIZE + half_size,
+                half_size,
+                half_size,
+                grain.color[2],
+            )
+            DrawRectangle(
+                grain.gx * SAND_SIZE + half_size,
+                grain.gy * SAND_SIZE + half_size,
+                half_size,
+                half_size,
+                grain.color[3],
             )

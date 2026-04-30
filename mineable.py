@@ -21,7 +21,7 @@ class StoneGrain:
         self.gx = gx
         self.gy = gy
         self.active = False
-        self.color = random.choice(_STONE_COLORS)
+        self.color = [random.choice(_STONE_COLORS) for _ in range(4)]
 
 
 class MineableSimulation:
@@ -76,11 +76,34 @@ class MineableSimulation:
 
     def draw(self):
         for grain in self.grains:
-            if not grain.active:
-                DrawRectangle(
-                    grain.gx * STONE_SIZE,
-                    grain.gy * STONE_SIZE,
-                    STONE_SIZE,
-                    STONE_SIZE,
-                    grain.color,
-                )
+            if(grain.active):
+                continue
+            half_size = SAND_SIZE // 2
+            DrawRectangle(
+                grain.gx * SAND_SIZE,
+                grain.gy * SAND_SIZE,
+                half_size,
+                half_size,
+                grain.color[0],
+            )
+            DrawRectangle(
+                grain.gx * SAND_SIZE + half_size,
+                grain.gy * SAND_SIZE,
+                half_size,
+                half_size,
+                grain.color[1],
+            )
+            DrawRectangle(
+                grain.gx * SAND_SIZE,
+                grain.gy * SAND_SIZE + half_size,
+                half_size,
+                half_size,
+                grain.color[2],
+            )
+            DrawRectangle(
+                grain.gx * SAND_SIZE + half_size,
+                grain.gy * SAND_SIZE + half_size,
+                half_size,
+                half_size,
+                grain.color[3],
+            )
