@@ -1,6 +1,8 @@
 from enemy import Enemy
+from gem import Gems
 from settings import *
 from sand import SAND_SIZE
+from pyray import *
 
 def parse_level(path):
     """
@@ -32,11 +34,12 @@ def parse_level(path):
                 mineable_spawns.append((c, r))
                 new_level[r][c] = TILE_AIR
             elif new_level[r][c] == TILE_COIN:
-                coins.append((x + TILE_SIZE / 2, y + TILE_SIZE / 2))
+                coins.append(Gems(x + TILE_SIZE / 2, y + TILE_SIZE / 2))
                 new_level[r][c] = TILE_AIR
 
     return new_level, coins, enemies, sand_spawns, mineable_spawns
 
+    
 def check_sand_crush(sand,rect):
 
     rect_x, rect_y, rect_w, rect_h = rect

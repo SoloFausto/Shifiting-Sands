@@ -218,22 +218,18 @@ class Player:
                     self.x = (top_gx + 1) * size
                 self.vx = 0.0
 
-    def check_collection(self, collectibles):
+    def check_gem_collection(self, gem):
         """Checks for collision with coins and returns indices of collected coins."""
-        collected_indices = []
         player_rect = self.get_rect()
         coin_collision_size = TILE_SIZE * 0.5
+        coin_x = gem.x - coin_collision_size / 2
+        coin_y = gem.y - coin_collision_size / 2
+        coin_rect = (coin_x, coin_y, coin_collision_size, coin_collision_size)
+
+        if CheckCollisionRecs(player_rect, coin_rect):
+            return True
+        return False
         
-        for i, (cx, cy) in enumerate(collectibles):
-            coin_x = cx - coin_collision_size / 2
-            coin_y = cy - coin_collision_size / 2
-            coin_rect = (coin_x, coin_y, coin_collision_size, coin_collision_size)
-            
-            if CheckCollisionRecs(player_rect, coin_rect):
-                collected_indices.append(i)
-                
-        return collected_indices
-    
     def check_enemy_collision(self, enemies):
         player_rect = self.get_rect()
         px, py, pw, ph = player_rect

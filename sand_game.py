@@ -15,6 +15,7 @@ class Game():
         self.game_level, self.collectibles, self.enemies, sand_spawns,mineable_spawns = parse_level(LEVEL_PATH)
         self.sand = SandSimulation()
         self.mineable = MineableSimulation()
+        
         for col, row in sand_spawns:
             self.sand.spawn_block(col, row)
         for col, row in mineable_spawns:
@@ -27,6 +28,7 @@ class Game():
         TEXTURES["player_mine"] = load_texture("assets/mine.png")
         TEXTURES["player_throw"] = load_texture("assets/rock_throw.png")
         TEXTURES["enemy"] = load_texture("assets/enemy.png")
+        TEXTURES["gems"] = load_texture("assets/gems.png")
         # Game State Variables
         # Player starts at TILE_SIZE * 2, TILE_SIZE * 2
         self.player = Player(TILE_SIZE * 2, TILE_SIZE * 2) 
@@ -82,11 +84,9 @@ class Game():
 
             self.update_camera(WORLD_WIDTH, WORLD_HEIGHT, SCREEN_WIDTH, SCREEN_HEIGHT)
 
-            # Check for coin collection
-            collected_indices = self.player.check_collection(self.collectibles)
-            if collected_indices:
-                for index in sorted(collected_indices, reverse=True):
-                    self.collectibles.pop(index)
+            for gem in self.collectibles:
+                if self.player.check_gem_collection(gem):
+                    self.collectibles.remove(gem)
                     self.score += 10
             
             # Check for enemy collisions
@@ -134,8 +134,8 @@ class Game():
         self.mineable.draw()
         
         # 4. Draw Collectibles
-        self.draw_coins(self.collectibles)
-
+        for gem in self.collectibles:
+            gem.draw()
         # 5. Draw Enemies
         for enemy in self.enemies:
             enemy.draw()
@@ -176,21 +176,7 @@ class Game():
                         DrawRectangle(x, y, TILE_SIZE, TILE_SIZE, BROWN)
                         DrawRectangleLines(x, y, TILE_SIZE, TILE_SIZE, BLACK)
                     
-    def draw_coins(self, coins):
-        """Draws the active coins as small yellow diamonds (polygons)."""
-        radius = TILE_SIZE * 0.3 / 2 
-        
-        for cx, cy in coins:
-            v1 = Vector2(cx, cy - radius * 2)
-            v2 = Vector2(cx + radius * 1.5, cy)
-            v3 = Vector2(cx, cy + radius * 2)
-            v4 = Vector2(cx - radius * 1.5, cy)
-            
-            DrawTriangle(v1, v2, v4, YELLOW)
-            DrawTriangle(v2, v3, v4, GOLD)
-            
-            DrawLineV(v1, v3, BLACK)
-            DrawLineV(v2, v4, BLACK)
+
 
 
     def update_camera(self, world_width, world_height, screen_width, screen_height):
