@@ -1,5 +1,6 @@
 import raylib
 import pyray
+from dynamite import Dynamite
 from settings import *
 from utils import *
 
@@ -12,15 +13,19 @@ from mineable import MineableSimulation
 class Game():
     def __init__(self):
         self.isGameOver = True
-        self.game_level, self.collectibles, self.enemies, sand_spawns,mineable_spawns = parse_level(LEVEL_PATH)
+        self.game_level, self.collectibles, self.enemies, sand_spawns,mineable_spawns, dynamite_spawns = parse_level(LEVEL_PATH)
         self.sand = SandSimulation()
         self.mineable = MineableSimulation()
-        
+        self.dynamites: list[Dynamite] = []
+
         for col, row in sand_spawns:
             self.sand.spawn_block(col, row)
         for col, row in mineable_spawns:
             self.mineable.spawn_block(col, row)
+        for col, row in dynamite_spawns:
+            self.dynamites.append(Dynamite(col * TILE_SIZE + TILE_SIZE / 2, row * TILE_SIZE + TILE_SIZE / 2))
         TEXTURES["block"] = load_texture("assets/sand.png")
+        TEXTURES["underground"] = load_texture("assets/sand.png")  # Reusing sand or replace with appropriate texture
         TEXTURES["bg"] = load_texture("assets/bg.png")
         TEXTURES["player_idle"] = load_texture("assets/idle.png")
         TEXTURES["player_walk"] = load_texture("assets/walking.png")
@@ -29,6 +34,8 @@ class Game():
         TEXTURES["player_throw"] = load_texture("assets/rock_throw.png")
         TEXTURES["enemy"] = load_texture("assets/enemy.png")
         TEXTURES["gems"] = load_texture("assets/gems.png")
+        TEXTURES["dynamite"] = load_texture("assets/dynamite.png")
+        TEXTURES["dynamite_explosion"] = load_texture("assets/dynamite-explosion.png")
         # Game State Variables
         # Player starts at TILE_SIZE * 2, TILE_SIZE * 2
         self.player = Player(TILE_SIZE * 2, TILE_SIZE * 2) 
@@ -42,6 +49,7 @@ class Game():
         self.camera.offset = Vector2(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2) 
         self.camera.rotation = 0.0
         self.camera.zoom = 1.0
+        print("WORLD SIZE:", WORLD_WIDTH, WORLD_HEIGHT)
         
     def update(self):
         delta_time = GetFrameTime()
@@ -79,8 +87,13 @@ class Game():
 
 
             for stone in self.stones:
-                stone.update(delta_time, self.game_level, self.sand,self.mineable)
+                stone.update(delta_time, self.game_level, self.sand,self.mineable, self.dynamites,self.player,self.enemies)
             self.stones = [s for s in self.stones if s.active]
+
+            for dynamite in self.dynamites:
+                dynamite.update(delta_time)
+            # Remove dynamites that finished explosion animation
+            self.dynamites = [d for d in self.dynamites if not d.exploded]
 
             self.update_camera(WORLD_WIDTH, WORLD_HEIGHT, SCREEN_WIDTH, SCREEN_HEIGHT)
 
@@ -119,10 +132,22 @@ class Game():
         ClearBackground(Color(208,176,128,255))
         # Start the 2D camera mode
         BeginMode2D(self.camera)
-        draw_texture_pro(TEXTURES["bg"], 
-                    Rectangle(0, 0, TEXTURES["bg"].width, TEXTURES["bg"].height),
-                    Rectangle(0, 0, WORLD_WIDTH, WORLD_HEIGHT/2 + 1200),
+        
+        # Draw sky/ground background above ground level
+        bg_tex = TEXTURES["bg"]
+        # Assuming the sky texture needs to stretch from top of world down to GROUND_LEVEL_Y
+        draw_texture_pro(bg_tex, 
+                    Rectangle(0, 0, bg_tex.width, bg_tex.height),
+                    Rectangle(0, 0, WORLD_WIDTH, GROUND_LEVEL_Y),
                     Vector2(0, 0), 0.0, WHITE)
+
+        # Draw repeating underground background below ground level
+        ug_tex = TEXTURES["underground"]
+        tint = Color(150, 150, 150, 255)
+        # Tile manually since draw_texture_tiled might not be available
+        for y in range(int(GROUND_LEVEL_Y), int(WORLD_HEIGHT), ug_tex.height):
+            for x in range(0, int(WORLD_WIDTH), ug_tex.width):
+                draw_texture(ug_tex, x, y, tint)
 
         # 1. Draw the Level
         self.draw_level(self.game_level)
@@ -143,6 +168,9 @@ class Game():
         # 6. Draw Stones
         for stone in self.stones:
             stone.draw()
+            
+        for dynamite in self.dynamites:
+            dynamite.draw()
 
         # 7. Draw Player
         self.player.draw()

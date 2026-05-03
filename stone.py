@@ -5,7 +5,7 @@ from sand import SAND_SIZE
 from mineable import STONE_SIZE
 
 STONE_RADIUS = 3
-STONE_SPEED = 900.0
+STONE_SPEED = 1050.0
 
 
 class Stone:
@@ -21,7 +21,7 @@ class Stone:
         self.vy = (dy / dist) * STONE_SPEED
         self.active = True
 
-    def update(self, delta_time: float, level, sand, mineable):
+    def update(self, delta_time, level, sand, mineable, dynamites,player,enemies):
         #trajectory largely from what we did in class
         if not self.active:
             return
@@ -54,9 +54,19 @@ class Stone:
 
         mineable_gx = int(self.x / STONE_SIZE)
         mineable_gy = int(self.y / STONE_SIZE)
-        if (mineable_gx, mineable_gy) in mineable.occupied and self.is_mining:
+        if (mineable_gx, mineable_gy) in mineable.occupied:
             self.active = False
-            mineable.toggle_mineable_clump_active(mineable_gx, mineable_gy)
+            if self.is_mining:
+                mineable.toggle_mineable_clump_active(mineable_gx, mineable_gy)
+            return
+            
+        for dynamite in dynamites:
+            if not dynamite.exploded and not dynamite.exploding:
+                dist = math.sqrt((self.x - dynamite.x) ** 2 + (self.y - dynamite.y) ** 2)
+                if dist <= TILE_SIZE * 0.5:
+                    self.active = False
+                    dynamite.explode(level, sand, mineable,player,enemies)
+                    break
             
             
            

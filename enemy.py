@@ -8,8 +8,8 @@ class Enemy:
         # Position (top-left for collision)
         self.x = x
         self.y = y
-        self.width = TILE_SIZE * 0.7
-        self.height = TILE_SIZE * 0.7
+        self.width = TILE_SIZE * 1.5
+        self.height = TILE_SIZE * 1.5
         
         # Physics/Movement
         self.vx = getattr(self, 'vx', ENEMY_SPEED) # Start moving right
@@ -138,11 +138,14 @@ class Enemy:
                         break
             if top_gy is not None:
                 if self.vy >= 0:
-                    self.y = top_gy * size - self.height
-                    self.is_grounded = True
+                    if self.y + self.height - top_gy * size <= size + 10:
+                        self.y = top_gy * size - self.height
+                        self.is_grounded = True
+                    else:
+                        self.vy = 0.0
                 else:
                     self.y = (top_gy + 1) * size
-                self.vy = 0.0
+                    self.vy = 0.0
             elif self.vy >= 0:
                 feet_y = self.y + self.height
                 probe_gy = int(feet_y / size)
@@ -152,6 +155,7 @@ class Enemy:
                             toggle_clump_active(gx, g)
                             if g * size - feet_y < size:
                                 self.is_grounded = True
+                                self.vy = 0.0
                                 return
 
         elif axis == 'X':

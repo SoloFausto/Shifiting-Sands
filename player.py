@@ -45,16 +45,6 @@ class Player:
             self.vx = PLAYER_SPEED
             self.facing = 1
 
-        # 1.5 Handle Mining Input
-        if IsKeyPressed(KEY_E) and mineable:
-            self.action_timer = 0.0
-            mine_x = self.x + self.width if self.facing == 1 else self.x 
-            mine_y = self.y
-            if (mine_x, mine_y) in mineable.occupied:
-                mineable.toggle_mineable_clump_active(mine_x, mine_y)
-            
-            
-
         # --- Velocity Zeroing for Stability ---
         if self.is_grounded:
             self.vy = 0.0
@@ -140,13 +130,12 @@ class Player:
                             self.vx = 0.0 
                             
                         elif axis == 'Y':
-                            if self.vy >= 0: # Falling (Hitting Ground)
+                            if self.vy >= 0 and py + ph - tile_rect[1] <= STEP_HEIGHT + TILE_SIZE * 0.5: # Falling (Hitting Ground)
                                 self.y = tile_rect[1] - self.height
                                 self.is_grounded = True 
-                            elif self.vy < 0: # Jumping (Hitting Ceiling)
+                            else: # Jumping (Hitting Ceiling)
                                 self.y = tile_rect[1] + TILE_SIZE
-                                
-                            self.vy = 0.0 
+                                self.vy = 0.0 
                             
                         player_rect = self.get_rect()
                         px, py, pw, ph = player_rect
@@ -172,7 +161,9 @@ class Player:
                             top_gy = gy
                         break
             if top_gy is not None:
-                if self.vy >= 0:
+                grain_center_y = top_gy * size + size / 2
+                player_center_y = self.y + self.height / 2
+                if player_center_y < grain_center_y:
                     self.y = top_gy * size - self.height
                     self.is_grounded = True
                 else:
@@ -186,7 +177,9 @@ class Player:
                         if (gx, g) in sand.occupied:
                             toggle_clump_active(gx, g)
                             if g * size - feet_y < size:
+                                self.y = g * size - self.height
                                 self.is_grounded = True
+                                self.vy = 0.0
                                 return
 
         elif axis == 'X':

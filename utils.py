@@ -16,6 +16,7 @@ def parse_level(path):
     enemies = []
     sand_spawns = []  # list of (tile_col, tile_row)
     mineable_spawns = []  # list of (tile_col, tile_row)
+    dynamite_spawns = []  # list of (tile_col, tile_row)
     new_level = [row[:] for row in level]
 
     for r in range(TILE_ROWS):
@@ -36,8 +37,11 @@ def parse_level(path):
             elif new_level[r][c] == TILE_COIN:
                 coins.append(Gems(x + TILE_SIZE / 2, y + TILE_SIZE / 2))
                 new_level[r][c] = TILE_AIR
+            elif new_level[r][c] == TILE_DYNAMITE:
+                dynamite_spawns.append((c, r))
+                new_level[r][c] = TILE_AIR
 
-    return new_level, coins, enemies, sand_spawns, mineable_spawns
+    return new_level, coins, enemies, sand_spawns, mineable_spawns, dynamite_spawns
 
     
 def check_sand_crush(sand,rect):

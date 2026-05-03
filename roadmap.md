@@ -65,7 +65,7 @@ Next TODO:
 - Do not simulate sand that hasn't been interacted with, propagate interactions to neighbours
 - Possibly divide sand into smaller or bigger particles?
 
-Date 2026/04/20, 02-30
+Date 2026/04/20, 14-30
 **Goal**
 Have the falling sand collide with the player
 **Implementation**
@@ -80,7 +80,7 @@ Next TODO:
 - Rock Throwing
 - Do not simulate sand that hasn't been interacted with, propagate interactions to neighbours
 
-Date 2026/04/20, 04-00
+Date 2026/04/20, 16-00
 **Goal**
 Throw rocks to make sand clumps fall
 **Implementation**
@@ -94,7 +94,7 @@ Next TODO:
 - Sand damage to both the player and enemies when falling
 - Start bringing assets
 
-Date 2026/04/22, 05-00
+Date 2026/04/22, 17-00
 **Goal**
 Refine the sand clump falling
 **Implementation**
@@ -146,7 +146,7 @@ Next TODO:
 - Dynamite
 - Slight enemy fix
 
-Date 2026/04/29
+Date 2026/04/29 12-45
 **Goal**
 Change enemy sprite, further fix enemy interactions with sand, subdivide sand particles
 **Implementation**
@@ -162,3 +162,40 @@ Next TODO:
 - Level 2 implementation
 - Bring extra assets
 - Dialogues/menus,etc.
+
+Date 2026/05/01 16-00
+**Goal**
+Clean up unused materials, add the assets
+
+**Implementation**
+Gems from https://opengameart.org/content/32x32-pixel-gems
+Dynamite from https://tumas81.itch.io/minerman-adventure
+Final Background generated with gemini
+Egg sprite manually traced over from the picture
+Tent Sprite from https://www.dreamstime.com/camping-tent-pixel-art-bit-tourist-isolated-pixelated-vector-illustration-image277660178
+traced over
+
+Commit Message: Added all the necessary assets, removed unused ones
+Next TODO:
+Add gameplay changes with these assets
+Implement menus, gameover state, pause
+Implement SFX
+
+Date 2026/05/01 22-00
+**Goal**
+Add the final proposed features for the game
+**Implementation**
+Changed gems to be their own class
+Small changes to stone with the help of AI to fix some movement bugs
+Lowered the tile size and reworked the levels 
+Implemented dynamite that destroys mineable, sand, kills the player and enemies when it explodes
+
+Commit Message
+Added dynamite,gems, and lowered the tile size.
+
+Next TODO:
+Implement menus, gameover state, pause
+Implement SFX
+Make level 2
+
+
