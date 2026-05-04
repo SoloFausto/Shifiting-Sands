@@ -120,10 +120,16 @@ if __name__ == '__main__':
     
     if isLevelTransition:
       draw_texture_ex(TEXTURES['game_over'], Vector2(0, 0), 0.0,1, WHITE)
+      text_0 = "Level Complete!"
+      text_1 = "Preparing Next Level..."
+      text_2 = "Press Enter to Continue"
+      line0_x = WINDOW_WIDTH//2 - measure_text(text_0, FONT_SIZE*3)//2
+      line1_x = WINDOW_WIDTH//2 - measure_text(text_1, FONT_SIZE*2)//2
+      line2_x = WINDOW_WIDTH//2 - measure_text(text_2, FONT_SIZE*2)//2
 
-      draw_text("Level Complete!", WINDOW_WIDTH//2 - 160, WINDOW_HEIGHT//2 - 200, FONT_SIZE*3, WHITE)
-      draw_text("Preparing Next Level...", WINDOW_WIDTH//2 - 220, WINDOW_HEIGHT//2 - 50, FONT_SIZE*2, WHITE)
-      draw_text("Press Enter to Continue", WINDOW_WIDTH//2 - 220, WINDOW_HEIGHT//2 + 50, FONT_SIZE*2, WHITE)
+      draw_text("Level Complete!", line0_x, WINDOW_HEIGHT//2 - 200, FONT_SIZE*3, WHITE)
+      draw_text("Preparing Next Level...", line1_x, WINDOW_HEIGHT//2 - 50, FONT_SIZE*2, WHITE)
+      draw_text("Press Enter to Continue", line2_x, WINDOW_HEIGHT//2 + 50, FONT_SIZE*2, WHITE)
 
     elif isIntroScreen:
       draw_texture_ex(TEXTURES['dialogue'], Vector2(0, 0), 0.0,1, WHITE)
