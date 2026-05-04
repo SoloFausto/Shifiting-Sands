@@ -204,9 +204,9 @@ Add the final proposed features for the game
 **Implementation**
 Finished level 2
 Made dynamites be chainable
-Added the egg collectable that wins the game
+Added the egg collectable that advances the game
 Improved the enemy pathfinding
-refactored the sand game to be instantiable to a specific level
+refactored the sand_game to be instantiable to a specific level
 made it so you can now mine sand with the picaxe
 added the menus and transitions between levels
 
@@ -216,3 +216,15 @@ Next TODO:
 Implement pause, and a reset button
 Implement SFX
 add introduction to the game
+
+**Goal*
+Add all the necessary menus and missing assets to the game
+**Implementation**
+Gimp and Gemini image generation for the title screen 
+Added pause and reset level function
+Added a small introduction to the game
+
+Commit Message:
+FINAL COMMIT: Added a small introduction, pause and reset.
+Next TODO:
+Implement SFX

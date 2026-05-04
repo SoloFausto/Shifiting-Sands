@@ -47,6 +47,9 @@ class Game():
         TEXTURES["dynamite_explosion"] = load_texture("assets/dynamite-explosion.png")
         TEXTURES['tent'] = load_texture("assets/tent.png")
         TEXTURES['egg'] = load_texture("assets/egg.png")
+        TEXTURES['title_screen'] = load_texture("assets/title_screen.png")
+        TEXTURES['dialogue'] = load_texture("assets/dialogue.png")
+        TEXTURES['game_over'] = load_texture("assets/game_over.png")
         # Game State Variables
         # Player starts at TILE_SIZE * 2, TILE_SIZE * 2
         self.player = Player(spawn_x, spawn_y, tile_rows, tile_cols, world_width, world_height)
