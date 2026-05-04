@@ -11,12 +11,15 @@ from stone import Stone
 from mineable import MineableSimulation
 
 class Game():
-    def __init__(self):
+    def __init__(self,level_idx,spawn_x, spawn_y,points):
         self.isGameOver = True
-        self.game_level, self.collectibles, self.enemies, sand_spawns,mineable_spawns, dynamite_spawns = parse_level(LEVEL_PATH)
-        self.sand = SandSimulation()
-        self.mineable = MineableSimulation()
+        self.game_level, collectibles, enemies, sand_spawns,mineable_spawns, dynamite_spawns, eggs, tile_rows,tile_cols,world_width,world_height = parse_level(LEVEL_PATH[level_idx])
+        self.sand = SandSimulation(tile_rows,tile_cols,world_width,world_height)
+        self.mineable = MineableSimulation(tile_rows,tile_cols,world_width,world_height)
         self.dynamites: list[Dynamite] = []
+        self.enemies: list[Enemy] = []
+        self.eggs: list[Egg] = []
+        self.collectibles: list[Gems] = []
 
         for col, row in sand_spawns:
             self.sand.spawn_block(col, row)
@@ -24,6 +27,12 @@ class Game():
             self.mineable.spawn_block(col, row)
         for col, row in dynamite_spawns:
             self.dynamites.append(Dynamite(col * TILE_SIZE + TILE_SIZE / 2, row * TILE_SIZE + TILE_SIZE / 2))
+        for col, row in eggs:
+            self.eggs.append(Egg(col * TILE_SIZE + TILE_SIZE / 2, row * TILE_SIZE + TILE_SIZE / 2))
+        for col, row in enemies:
+            self.enemies.append(Enemy(col * TILE_SIZE, row * TILE_SIZE, tile_rows, tile_cols, world_width, world_height))
+        for gem in collectibles:
+            self.collectibles.append(gem)
         TEXTURES["block"] = load_texture("assets/sand.png")
         TEXTURES["underground"] = load_texture("assets/sand.png")  # Reusing sand or replace with appropriate texture
         TEXTURES["bg"] = load_texture("assets/bg.png")
@@ -36,20 +45,31 @@ class Game():
         TEXTURES["gems"] = load_texture("assets/gems.png")
         TEXTURES["dynamite"] = load_texture("assets/dynamite.png")
         TEXTURES["dynamite_explosion"] = load_texture("assets/dynamite-explosion.png")
+        TEXTURES['tent'] = load_texture("assets/tent.png")
+        TEXTURES['egg'] = load_texture("assets/egg.png")
         # Game State Variables
         # Player starts at TILE_SIZE * 2, TILE_SIZE * 2
-        self.player = Player(TILE_SIZE * 2, TILE_SIZE * 2) 
+        self.player = Player(spawn_x, spawn_y, tile_rows, tile_cols, world_width, world_height)
+        self.player.points = points 
         self.stones: list[Stone] = []
-        self.score = 0
+        self.score = points
         self.game_state = "PLAYING"
-        
+        self.tile_rows = tile_rows
+        self.tile_cols = tile_cols
+        self.world_width = world_width
+        self.world_height = world_height
+        if level_idx == 0:
+            self.ground_level_y = self.world_height - 1600
+        else:
+            self.ground_level_y = 0
+
         # --- Camera Initialization ---
         self.camera = Camera2D()
         self.camera.target = Vector2(self.player.x, self.player.y + self.player.height / 2) 
         self.camera.offset = Vector2(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2) 
         self.camera.rotation = 0.0
         self.camera.zoom = 1.0
-        print("WORLD SIZE:", WORLD_WIDTH, WORLD_HEIGHT)
+        print("WORLD SIZE:", world_width, world_height)
         
     def update(self):
         delta_time = GetFrameTime()
@@ -95,20 +115,36 @@ class Game():
             # Remove dynamites that finished explosion animation
             self.dynamites = [d for d in self.dynamites if not d.exploded]
 
-            self.update_camera(WORLD_WIDTH, WORLD_HEIGHT, SCREEN_WIDTH, SCREEN_HEIGHT)
+            self.update_camera(self.world_width, self.world_height, SCREEN_WIDTH, SCREEN_HEIGHT)
 
             for gem in self.collectibles:
                 if self.player.check_gem_collection(gem):
                     self.collectibles.remove(gem)
                     self.score += 10
-            
+
+            for egg in self.eggs:
+                if self.player.check_gem_collection(egg):
+                    self.eggs.remove(egg)
+                    if not self.eggs:
+                        self.game_state = "WON"
+                        self.isGameOver = True
+
             # Check for enemy collisions
             if self.player.check_enemy_collision(self.enemies):
                 # Death/Reset mechanic: Penalty and restart
                 self.player.reset()
+                self.player.lives -= 1
                 self.score -= 50 
                 if self.score < 0: self.score = 0
-                
+            if check_sand_crush(self.sand,self.player.get_rect()):
+                self.player.reset()
+                self.player.lives -= 1
+                self.score -= 20 
+                if self.score < 0: self.score = 0 
+            
+            if self.player.lives <= 0:
+                self.isGameOver = True
+                self.game_state = "LOST"   
             for enemy in self.enemies:
                 if check_sand_crush(self.sand,enemy.get_rect()):
                     self.enemies.pop(self.enemies.index(enemy))
@@ -116,17 +152,27 @@ class Game():
                     break
 
 
-            if check_sand_crush(self.sand,self.player.get_rect()):
-                self.player.reset()
-                self.score -= 20 
-                if self.score < 0: self.score = 0
+
     
     def spawn_stone(self, rock_lifetime, is_mining):
         mouse_screen = GetMousePosition()
         mouse_world = GetScreenToWorld2D(mouse_screen, self.camera)
         cx = self.player.x + self.player.width / 2
         cy = self.player.y + self.player.height / 2
-        self.stones.append(Stone(cx, cy, mouse_world.x, mouse_world.y, rock_lifetime, is_mining))
+        self.stones.append(
+            Stone(
+                cx,
+                cy,
+                mouse_world.x,
+                mouse_world.y,
+                rock_lifetime,
+                is_mining,
+                self.tile_rows,
+                self.tile_cols,
+                self.world_width,
+                self.world_height,
+            )
+        )
         
     def draw(self):
         ClearBackground(Color(208,176,128,255))
@@ -135,18 +181,24 @@ class Game():
         
         # Draw sky/ground background above ground level
         bg_tex = TEXTURES["bg"]
-        # Assuming the sky texture needs to stretch from top of world down to GROUND_LEVEL_Y
         draw_texture_pro(bg_tex, 
                     Rectangle(0, 0, bg_tex.width, bg_tex.height),
-                    Rectangle(0, 0, WORLD_WIDTH, GROUND_LEVEL_Y),
+                    Rectangle(0, 0, self.world_width, self.ground_level_y),
                     Vector2(0, 0), 0.0, WHITE)
 
-        # Draw repeating underground background below ground level
+        if self.ground_level_y > 0:
+            tent_tex = TEXTURES["tent"]
+            size_x = tent_tex.width * 2
+            size_y = tent_tex.height * 2
+            draw_texture_pro(tent_tex,
+                            Rectangle(0, 0, tent_tex.width, tent_tex.height),
+                            Rectangle(25*TILE_SIZE-size_x/2, 20*TILE_SIZE-size_y/2, size_x, size_y),
+                            Vector2(0, 0), 0.0, WHITE)
+            
         ug_tex = TEXTURES["underground"]
         tint = Color(150, 150, 150, 255)
-        # Tile manually since draw_texture_tiled might not be available
-        for y in range(int(GROUND_LEVEL_Y), int(WORLD_HEIGHT), ug_tex.height):
-            for x in range(0, int(WORLD_WIDTH), ug_tex.width):
+        for y in range(int(self.ground_level_y), int(self.world_height), ug_tex.height):
+            for x in range(0, int(self.world_width), ug_tex.width):
                 draw_texture(ug_tex, x, y, tint)
 
         # 1. Draw the Level
@@ -172,6 +224,8 @@ class Game():
         for dynamite in self.dynamites:
             dynamite.draw()
 
+        for egg in self.eggs:
+            egg.draw()
         # 7. Draw Player
         self.player.draw()
         
@@ -180,16 +234,17 @@ class Game():
         
         # 5. Draw HUD (Drawn on screen, outside of BeginMode2D)
         score_text = f"Score: {self.score}".encode('utf-8')
-        DrawText(score_text, SCREEN_WIDTH - MeasureText(score_text, 20) - 10, 10, 20, BLACK)
+        DrawText(score_text, SCREEN_WIDTH - MeasureText(score_text, 40) - 10, 10, 40, BLACK)
         
-        debug_text = f"Grounded: {self.player.is_grounded} | Enemies: {len(self.enemies)}".encode('utf-8')
-        DrawText(debug_text, 10, 10, 20, BLACK) 
+        lives_text = f"Lives: {self.player.lives}".encode('utf-8')
+        DrawText(lives_text, 10, 10, 40, BLACK)
+        
 
     
     def draw_level(self, level):
         """Draws the solid tiles of the level map."""
-        for row in range(TILE_ROWS):
-            for col in range(TILE_COLS):
+        for row in range(self.tile_rows):
+            for col in range(self.tile_cols):
                 tile_value = level[row][col]
                 if tile_value == TILE_SOLID:
                     x = col * TILE_SIZE

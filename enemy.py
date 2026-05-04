@@ -4,12 +4,16 @@ from raylib import *
 from pyray import *
 from settings import *
 class Enemy:
-    def __init__(self, x, y):
+    def __init__(self, x, y, tile_rows, tile_cols, world_width, world_height):
         # Position (top-left for collision)
         self.x = x
         self.y = y
         self.width = TILE_SIZE * 1.5
         self.height = TILE_SIZE * 1.5
+        self.tile_rows = tile_rows
+        self.tile_cols = tile_cols
+        self.world_width = world_width
+        self.world_height = world_height
         
         # Physics/Movement
         self.vx = getattr(self, 'vx', ENEMY_SPEED) # Start moving right
@@ -21,6 +25,34 @@ class Enemy:
     def get_rect(self):
         """Returns the enemy's collision bounding box."""
         return (self.x, self.y, self.width, self.height)
+
+    def _has_support(self, level, sand, mineable, px, py):
+        if px < 0 or px >= self.world_width or py < 0 or py >= self.world_height:
+            return False
+        col = int(px / TILE_SIZE)
+        row = int(py / TILE_SIZE)
+        if 0 <= row < self.tile_rows and 0 <= col < self.tile_cols and level[row][col] == TILE_SOLID:
+            return True
+        if sand is not None:
+            gx = int(px / SAND_SIZE)
+            gy = int(py / SAND_SIZE)
+            if (gx, gy) in sand.occupied:
+                return True
+        if mineable is not None:
+            mx = int(px / STONE_SIZE)
+            my = int(py / STONE_SIZE)
+            if (mx, my) in mineable.occupied:
+                return True
+        return False
+
+    def handle_ledge_turn(self, level, sand, mineable):
+        if not self.is_grounded or self.vx == 0.0:
+            return
+        direction = 1 if self.vx > 0 else -1
+        probe_x = self.x + (self.width + 1 if direction > 0 else -1)
+        probe_y = self.y + self.height + 1
+        if not self._has_support(level, sand, mineable, probe_x, probe_y):
+            self.vx *= -1
 
     def update(self, delta_time, level,player,enemies,sand,mineable):
         # 1. Apply Gravity
@@ -43,6 +75,8 @@ class Enemy:
         self.handle_enemy_collision(enemies, 'Y')
         self.handle_sand_collision(sand, sand.toggle_sand_clump_active, 'Y', SAND_SIZE)
         self.handle_sand_collision(mineable, lambda gx, gy: None, 'Y', STONE_SIZE)
+
+        self.handle_ledge_turn(level, sand, mineable)
         
         if self.vx != 0.0:
             self.animation_timer += delta_time
@@ -66,7 +100,7 @@ class Enemy:
         for row in range(min_row, max_row + 1):
             for col in range(min_col, max_col + 1):
                 
-                if row < 0 or row >= TILE_ROWS or col < 0 or col >= TILE_COLS:
+                if row < 0 or row >= self.tile_rows or col < 0 or col >= self.tile_cols:
                     continue
                 
                 if level[row][col] == TILE_SOLID:

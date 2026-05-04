@@ -13,7 +13,7 @@ def convert_csv_to_txt(csv_file: str) -> Path:
 
 
 def main() -> None:
-    file_path = "assets/test.csv"
+    file_path = "assets/level2.csv"
 
     output_path = convert_csv_to_txt(file_path)
     print(f"Saved: {output_path}")

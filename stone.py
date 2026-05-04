@@ -9,17 +9,22 @@ STONE_SPEED = 1050.0
 
 
 class Stone:
-    def __init__(self, x: float, y: float, target_x: float, target_y: float, lifetime: float = 5.0, is_mining: bool = False):
+    def __init__(self, x: float, y: float, target_x: float, target_y: float, lifetime: float = 5.0, is_mining: bool = False, tile_rows: int = 0, tile_cols: int = 0, world_width: float = 0.0, world_height: float = 0.0):
         self.x = x
         self.y = y
         self.lifetime = lifetime
         self.is_mining = is_mining
+        self.tile_rows = tile_rows
+        self.tile_cols = tile_cols
+        self.world_width = world_width
+        self.world_height = world_height
         dx = target_x - x
         dy = target_y - y
         dist = math.sqrt(dx * dx + dy * dy) or 1.0
         self.vx = (dx / dist) * STONE_SPEED
         self.vy = (dy / dist) * STONE_SPEED
         self.active = True
+        
 
     def update(self, delta_time, level, sand, mineable, dynamites,player,enemies):
         #trajectory largely from what we did in class
@@ -35,21 +40,24 @@ class Stone:
             self.active = False
             return
 
-        if self.x < 0 or self.x >= WORLD_WIDTH or self.y < 0 or self.y >= WORLD_HEIGHT:
+        if self.x < 0 or self.x >= self.world_width or self.y < 0 or self.y >= self.world_height:
             self.active = False
             return
 
         col = int(self.x / TILE_SIZE)
         row = int(self.y / TILE_SIZE)
-        if 0 <= row < TILE_ROWS and 0 <= col < TILE_COLS and level[row][col] == TILE_SOLID:
+        if 0 <= row < self.tile_rows and 0 <= col < self.tile_cols and level[row][col] == TILE_SOLID:
             self.active = False
             return
 
         sand_gx = int(self.x / SAND_SIZE)
         sand_gy = int(self.y / SAND_SIZE)
-        if (sand_gx, sand_gy) in sand.occupied and not self.is_mining:
+        if (sand_gx, sand_gy) in sand.occupied:
             self.active = False
-            sand.toggle_sand_clump_active(sand_gx, sand_gy)
+            if self.is_mining:
+                sand.remove_sand_clump(sand_gx, sand_gy)
+            else:
+                sand.toggle_sand_clump_active(sand_gx, sand_gy)
             return
 
         mineable_gx = int(self.x / STONE_SIZE)
@@ -65,15 +73,8 @@ class Stone:
                 dist = math.sqrt((self.x - dynamite.x) ** 2 + (self.y - dynamite.y) ** 2)
                 if dist <= TILE_SIZE * 0.5:
                     self.active = False
-                    dynamite.explode(level, sand, mineable,player,enemies)
+                    dynamite.explode(level, sand, mineable,player,enemies,dynamites)
                     break
-            
-            
-           
-           
-
-
-                    
 
     def draw(self):
         if self.active and not self.is_mining:

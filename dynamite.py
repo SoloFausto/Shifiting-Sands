@@ -39,14 +39,14 @@ class Dynamite:
             dest_rect = Rectangle(self.x - tex.width / 2, self.y - tex.height / 2, tex.width, tex.height)
             draw_texture_pro(tex, Rectangle(0, 0, tex.width, tex.height), dest_rect, Vector2(0, 0), 0.0, WHITE)
         
-    def explode(self, level, sand, mineable,player,enemies):
+    def explode(self, level, sand, mineable,player,enemies,dynamites):
         if self.exploding or self.exploded:
             return
         self.exploding = True
         self.frame = 0
         self.timer = 0.0
         
-        explosion_radius = TILE_SIZE * 1.25
+        explosion_radius = TILE_SIZE * 1.5
         
         # Check for sand and mineable grains within explosion radius
         for grain in sand.grains:
@@ -68,6 +68,12 @@ class Dynamite:
         dist = ((player_center_x - self.x) ** 2 + (player_center_y - self.y) ** 2) ** 0.5
         if dist <= explosion_radius:
             player.reset()
+
+        for dynamite in dynamites:
+            if dynamite is not self and not dynamite.exploded and not dynamite.exploding:
+                dist = ((dynamite.x - self.x) ** 2 + (dynamite.y - self.y) ** 2) ** 0.5
+                if dist <= explosion_radius:
+                    dynamite.explode(level, sand, mineable,player,enemies,dynamites)
             
         for enemy in enemies:
             enemy_center_x = enemy.x + enemy.width / 2

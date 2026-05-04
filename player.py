@@ -8,7 +8,7 @@ from mineable import STONE_SIZE
 
 
 class Player:
-    def __init__(self, x, y):
+    def __init__(self, x, y, tile_rows, tile_cols, world_width, world_height):
         # Store starting position for reset
         self.start_x = x 
         self.start_y = y
@@ -30,6 +30,11 @@ class Player:
         self.action_timer = 0.0
         # Facing direction (1 for right, -1 for left)
         self.facing = 1
+        self.tile_rows = tile_rows
+        self.tile_cols = tile_cols
+        self.world_width = world_width
+        self.world_height = world_height
+        self.lives = 5
 
     def get_rect(self):
         """Returns the player's collision bounding box (top-left, width, height)."""
@@ -99,8 +104,8 @@ class Player:
             self.handle_sand_collision(mineable, lambda gx, gy: None, 'Y',STONE_SIZE)
 
         # --- Safety Clamp to World Bounds ---
-        self.x = max(0, min(self.x, WORLD_WIDTH - self.width))
-        
+        self.x = max(0, min(self.x, self.world_width - self.width))
+        self.y = max(0, min(self.y, self.world_height - self.height))
     def handle_tile_collision(self, level, axis):
         """Performs AABB collision checks against solid tiles and resolves the collision."""
         player_rect = self.get_rect()
@@ -114,7 +119,7 @@ class Player:
         for row in range(min_row, max_row + 1):
             for col in range(min_col, max_col + 1):
                 
-                if row < 0 or row >= TILE_ROWS or col < 0 or col >= TILE_COLS:
+                if row < 0 or row >= self.tile_rows or col < 0 or col >= self.tile_cols:
                     continue
                 
                 if level[row][col] == TILE_SOLID:
@@ -148,28 +153,35 @@ class Player:
         min_gy = int(py / size)
         max_gy = int((py + ph - 1) / size)
 
-        if axis == 'Y':
-            # Find the topmost grain (smallest gy) that overlaps the player.
-            top_gy = None
+        # Helper to find grains currently overlapping the player
+        def get_overlapping_grains():
+            player_rect = (self.x, self.y, self.width, self.height)
+            grains = []
             for gy in range(min_gy, max_gy + 1):
                 for gx in range(min_gx, max_gx + 1):
-                    if (gx, gy) not in sand.occupied:
-                        continue
-                    g_rect = (gx * size, gy * size, size, size)
-                    if CheckCollisionRecs((self.x, self.y, self.width, self.height), g_rect):
-                        if top_gy is None or gy < top_gy:
-                            top_gy = gy
-                        break
-            if top_gy is not None:
+                    if (gx, gy) in sand.occupied:
+                        g_rect = (gx * size, gy * size, size, size)
+                        if CheckCollisionRecs(player_rect, g_rect):
+                            grains.append((gx, gy))
+            return grains
+
+        if axis == 'Y':
+            grains = get_overlapping_grains()
+            if grains:
+                # Find the highest overlapping grain (smallest Y index)
+                top_gy = min(gy for gx, gy in grains)
                 grain_center_y = top_gy * size + size / 2
                 player_center_y = self.y + self.height / 2
+                
                 if player_center_y < grain_center_y:
                     self.y = top_gy * size - self.height
                     self.is_grounded = True
                 else:
                     self.y = (top_gy + 1) * size
                 self.vy = 0.0
+                
             elif self.vy >= 0:
+                # Secondary check for falling to wake up sand or land correctly
                 feet_y = self.y + self.height
                 probe_gy = int(feet_y / size)
                 for g in [probe_gy, probe_gy + 1]:
@@ -183,28 +195,21 @@ class Player:
                                 return
 
         elif axis == 'X':
-            # Find the topmost blocking grain across all columns the player overlaps.
-            top_gy = None
-            top_gx = None
-            for gy in range(min_gy, max_gy + 1):
-                for gx in range(min_gx, max_gx + 1):
-                    if (gx, gy) not in sand.occupied:
-                        continue
-                    g_rect = (gx * size, gy * size, size, size)
-                    if CheckCollisionRecs((self.x, self.y, self.width, self.height), g_rect):
-                        if top_gy is None or gy < top_gy:
-                            top_gy = gy
-                            top_gx = gx
-                        break
-            if top_gy is None:
+            grains = get_overlapping_grains()
+            if not grains:
                 return
+                
+            top_gy = min(gy for gx, gy in grains)
+            top_gx = next(gx for gx, gy in grains if gy == top_gy)
+            
             grain_top_px = top_gy * size
             step = (self.y + self.height) - grain_top_px
+            
             if 0 < step <= STEP_HEIGHT:
-                # Step up over the mound
+                # Step up over the small mound
                 self.y -= step
             else:
-                # Wall — block horizontal movement
+                # Hit a wall, block horizontal movement
                 if self.vx > 0:
                     self.x = top_gx * size - self.width
                 elif self.vx < 0:

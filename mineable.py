@@ -11,8 +11,7 @@ _STONE_COLORS = [
     Color(9, 3, 2, 255),
 ]
 
-_WORLD_GW = (TILE_COLS * TILE_SIZE) // STONE_SIZE
-_WORLD_GH = (TILE_ROWS * TILE_SIZE) // STONE_SIZE
+
 
 
 class StoneGrain:
@@ -25,9 +24,15 @@ class StoneGrain:
 
 
 class MineableSimulation:
-    def __init__(self):
+    def __init__(self,tile_rows,tile_cols,world_width,world_height):
         self.grains: list[StoneGrain] = []
         self.occupied: set[tuple[int, int]] = set()
+        self.tile_rows = tile_rows
+        self.tile_cols = tile_cols
+        self.world_width = world_width
+        self.world_height = world_height
+        self.world_grain_width = (self.tile_cols * TILE_SIZE) // STONE_SIZE
+        self.world_grain_height = (self.tile_rows * TILE_SIZE) // STONE_SIZE
 
     def spawn_block(self, tile_col: int, tile_row: int):
         grains_per_row = TILE_SIZE // STONE_SIZE
@@ -40,13 +45,13 @@ class MineableSimulation:
                 self.occupied.add((gx, gy))
 
     def _is_blocked(self, gx: int, gy: int, level) -> bool:
-        if gx < 0 or gx >= _WORLD_GW or gy >= _WORLD_GH:
+        if gx < 0 or gx >= self.world_grain_width or gy >= self.world_grain_height:
             return True
         if (gx, gy) in self.occupied:
             return True
         col = (gx * STONE_SIZE) // TILE_SIZE
         row = (gy * STONE_SIZE) // TILE_SIZE
-        if 0 <= row < TILE_ROWS and 0 <= col < TILE_COLS:
+        if 0 <= row < self.tile_rows and 0 <= col < self.tile_cols:
             return level[row][col] == TILE_SOLID
         return True
     def toggle_mineable_clump_active(self, gx, gy):

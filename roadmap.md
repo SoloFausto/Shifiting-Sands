@@ -199,3 +199,20 @@ Implement SFX
 Make level 2
 
 
+**Goal**
+Add the final proposed features for the game
+**Implementation**
+Finished level 2
+Made dynamites be chainable
+Added the egg collectable that wins the game
+Improved the enemy pathfinding
+refactored the sand game to be instantiable to a specific level
+made it so you can now mine sand with the picaxe
+added the menus and transitions between levels
+
+Commit Message
+Finished level 2, various feature improvements
+Next TODO:
+Implement pause, and a reset button
+Implement SFX
+add introduction to the game
