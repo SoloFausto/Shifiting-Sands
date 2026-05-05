@@ -217,7 +217,7 @@ Implement pause, and a reset button
 Implement SFX
 add introduction to the game
 
-**Goal*
+**Goal**
 Add all the necessary menus and missing assets to the game
 **Implementation**
 Gimp and Gemini image generation for the title screen 
@@ -228,3 +228,17 @@ Commit Message:
 FINAL COMMIT: Added a small introduction, pause and reset.
 Next TODO:
 Implement SFX
+
+**Goal**
+Added the GDD and the game trailer link.
+**Implementation**
+Davinci Resolve for editing the game trailer
+Added extra images meant to be used with the Game Design Document
+Fixed the win screen text layout
+
+Commit Message:
+Added the GDD and the game trailer link, fixed text.
+
+Unfinished TODO:
+Implement SFX
+Add music to the game

@@ -174,16 +174,19 @@ if __name__ == '__main__':
     else:
       if has_won:
         draw_texture_ex(TEXTURES['game_over'], Vector2(0, 0), 0.0,1, WHITE)
-        line1_text = "Congratulations, you found all the eggs!"
+        line1_text = "Congratulations!"
+        line2_text = "You found all the eggs!"
         score_text = f"Final Score: {final_score}"
         line3_text = "Press Enter to Restart Game"
-        line1_x = WINDOW_WIDTH//2 - measure_text(line1_text, FONT_SIZE*3)//2
-        line2_x = WINDOW_WIDTH//2 - measure_text(score_text, FONT_SIZE*2)//2
+        line1_x = WINDOW_WIDTH//2 - measure_text(line1_text, FONT_SIZE*2)//2
+        line2_x = WINDOW_WIDTH//2 - measure_text(line2_text, FONT_SIZE*2)//2
+        score_x = WINDOW_WIDTH//2 - measure_text(score_text, FONT_SIZE*2)//2
         line3_x = WINDOW_WIDTH//2 - measure_text(line3_text, FONT_SIZE*2)//2
 
-        draw_text(line1_text, line1_x, WINDOW_HEIGHT//2 - 200, FONT_SIZE*3, WHITE)
-        draw_text(score_text, line2_x, WINDOW_HEIGHT//2 - 50, FONT_SIZE*2, WHITE)
-        draw_text(line3_text, line3_x, WINDOW_HEIGHT//2 + 50, FONT_SIZE*2, WHITE)
+        draw_text(line1_text, line1_x, WINDOW_HEIGHT//2 - 200, FONT_SIZE*2, WHITE)
+        draw_text(line2_text, line2_x, WINDOW_HEIGHT//2 - 50, FONT_SIZE*2, WHITE)
+        draw_text(score_text, score_x, WINDOW_HEIGHT//2 + 50, FONT_SIZE*2, WHITE)
+        draw_text(line3_text, line3_x, WINDOW_HEIGHT//2 + 150, FONT_SIZE*2, WHITE)
       elif isTitleScreen:
         draw_texture_ex(TEXTURES['title_screen'], Vector2(0, 0), 0.0,1, WHITE)
         start_text = "Press Enter to Start"
