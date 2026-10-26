@@ -5,6 +5,7 @@ from sand_game import Game
 
 if __name__ == '__main__':  
 
+  set_config_flags(FLAG_WINDOW_HIGHDPI)
   init_window(WINDOW_WIDTH, WINDOW_HEIGHT, "Shifting Sands")
   init_audio_device()
   set_target_fps(120)
